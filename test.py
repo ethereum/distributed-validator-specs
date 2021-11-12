@@ -2,6 +2,7 @@ from eth2_node import (
     AttestationData,
     AttestationDuty,
     Attestation,
+    ValidatorIndex,
 )
 from eth2spec.phase0.mainnet import (
     is_slashable_attestation_data,
@@ -24,32 +25,35 @@ def get_current_time():
 
 # Beacon Node methods
 def attestation_duty_generator():
+    val_index = 1
     slot = 0
     while True:
-        yield slot
+        yield slot, val_index
         slot += 1
 
 attestation_duty_source = attestation_duty_generator()
 
 def bn_get_next_attestation_duty() -> AttestationDuty:
-    slot = next(attestation_duty_source)
-    return AttestationDuty(slot=slot)
+    slot, val_index = next(attestation_duty_source)
+    return AttestationDuty(slot=slot, validator_index=val_index)
 
 def bn_broadcast_attestation(attestation: Attestation) -> None:
     pass
 
 # Validator Client methods
-vc_slashing_db = set()
+vc_slashing_db = {}
 
-def vc_is_slashable(attestation_data: AttestationData) -> bool:
-    for past_attestation_data in vc_slashing_db:
+def vc_is_slashable(attestation_data: AttestationData, validator_index: ValidatorIndex) -> bool:
+    if validator_index not in vc_slashing_db:
+        vc_slashing_db[validator_index] = set()
+    for past_attestation_data in vc_slashing_db[validator_index]:
         if is_slashable_attestation_data(past_attestation_data, attestation_data):
             return True
     return False
 
-def vc_sign_attestation(attestation_data: AttestationData) -> AttestationData:
-    assert not vc_is_slashable(attestation_data)
-    vc_slashing_db.add(attestation_data)
+def vc_sign_attestation(attestation_data: AttestationData, validator_index: ValidatorIndex) -> AttestationData:
+    assert not vc_is_slashable(attestation_data, validator_index)
+    vc_slashing_db[validator_index].add(attestation_data)
     return attestation_data
 
 

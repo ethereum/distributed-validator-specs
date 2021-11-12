@@ -21,7 +21,7 @@ def attestation_duty_loop():
     attestation_data = consensus(attestation_duty.slot)
 
     # 1. Threshold sign attestation from local VC
-    threshold_signed_attestation_data = vc_sign_attestation(attestation_data)
+    threshold_signed_attestation_data = vc_sign_attestation(attestation_data, attestation_duty.validator_index)
     # 2. Broadcast threshold signed attestation
     # TODO
     # 3. Reconstruct complete signed attestation by combining threshold signed attestations
