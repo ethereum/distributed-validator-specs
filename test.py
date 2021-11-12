@@ -1,8 +1,7 @@
 from eth2_node import (
     AttestationData,
     AttestationDuty,
-    BeaconNodeTemplate,
-    ValidatorClientTemplate,
+    Attestation,
 )
 from eth2spec.phase0.mainnet import (
     is_slashable_attestation_data,
@@ -23,36 +22,38 @@ def get_current_time():
     return next(timer)
 
 
-class BeaconNode(BeaconNodeTemplate):
-    def __init__(self):
-        self.attestation_duty_source = self.attestation_duty_generator()
+# Beacon Node methods
+def attestation_duty_generator():
+    slot = 0
+    while True:
+        yield slot
+        slot += 1
 
-    def attestation_duty_generator(self):
-        slot = 0
-        while True:
-            yield slot
-            slot += 1
+attestation_duty_source = attestation_duty_generator()
 
-    def get_next_attestation_duty(self) -> AttestationDuty:
-        slot = next(self.attestation_duty_source)
-        return AttestationDuty(slot=slot)
+def bn_get_next_attestation_duty() -> AttestationDuty:
+    slot = next(attestation_duty_source)
+    return AttestationDuty(slot=slot)
+
+def bn_broadcast_attestation(attestation: Attestation) -> None:
+    pass
+
+# Validator Client methods
+vc_slashing_db = set()
+
+def vc_is_slashable(attestation_data: AttestationData) -> bool:
+    for past_attestation_data in vc_slashing_db:
+        if is_slashable_attestation_data(past_attestation_data, attestation_data):
+            return True
+    return False
+
+def vc_sign_attestation(attestation_data: AttestationData) -> AttestationData:
+    assert not vc_is_slashable(attestation_data)
+    vc_slashing_db.add(attestation_data)
+    return attestation_data
 
 
-class ValidatorClient(ValidatorClientTemplate):
-    def __init__(self):
-        self.slashing_db = set()
-
-    def is_slashable(self, attestation_data: AttestationData) -> bool:
-        for past_attestation_data in self.slashing_db:
-            if is_slashable_attestation_data(past_attestation_data, attestation_data):
-                return True
-        return False
-
-    def sign_attestation(self, attestation_data: AttestationData) -> AttestationData:
-        assert not self.is_slashable(attestation_data)
-        self.slashing_db.add(attestation_data)
-        return attestation_data
-
+# Other methods
 
 def calculate_attestation_time(slot):
     return 12 * slot + 4
