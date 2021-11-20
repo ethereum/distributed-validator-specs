@@ -120,20 +120,3 @@ def vc_is_slashable_block(block: BeaconBlock, validator_pubkey: BLSPubkey) -> bo
 
 def vc_sign_block(block: BeaconBlock, proposer_duty: ProposerDuty) -> SignedBeaconBlock:
     return SignedBeaconBlock(message=block)
-
-# Misc. Methods
-
-def calculate_attestation_time(slot):
-    return config.SECONDS_PER_SLOT * slot + GENESIS_TIME
-
-def is_valid_attestation_data(slot, attestation_data):
-    # Determines if `attestation_data` is valid for `slot`
-    return attestation_data.slot == slot
-
-def consensus(attestation_duty):
-    # Returns decided value for consensus instance at `slot`
-    attestation_data = AttestationData()
-    attestation_data.slot = attestation_duty.slot
-    attestation_data.target.epoch = attestation_duty.slot
-    is_valid_attestation_data(attestation_duty.slot, attestation_data)
-    return attestation_data

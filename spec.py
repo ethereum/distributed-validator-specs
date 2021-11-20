@@ -1,11 +1,52 @@
-from test import (
+from eth2_node import (
+    AttestationDuty, ProposerDuty,
+    AttestationData, BeaconBlock,
     bn_get_attestation_duties_for_epoch,
     bn_get_attestation_data,
     bn_submit_attestation,
+    bn_get_proposer_duties_for_epoch,
+    bn_produce_block,
     vc_is_slashable_attestation_data,
     vc_sign_attestation,
-    consensus,
+    vc_is_slashable_block,
+    vc_sign_block,
 )
+
+
+"""
+Consensus Specification
+"""
+
+def consensus_is_valid_attestation_data(attestation_data: AttestationData, attestation_duty: AttestationDuty) -> bool:
+    """Determines if the given attestation is valid for the attestation duty.
+    """
+    assert attestation_data.slot == attestation_duty.slot
+    assert attestation_data.committee_index == attestation_duty.committee_index
+    assert not vc_is_slashable_attestation_data(attestation_data, attestation_duty.pubkey)
+
+def consensus_on_attestation(attestation_duty: AttestationDuty) -> AttestationData:
+    """Consensus protocol between distributed validator nodes for attestation values.
+    Returns the decided value.
+    The consensus protocol must use `consensus_is_valid_attestation_data` to determine
+    validity of the proposed attestation value.
+    """
+    pass
+
+def consensus_is_valid_block(block: BeaconBlock, proposer_duty: ProposerDuty) -> bool:
+    """Determines if the given block is valid for the proposer duty.
+    """
+    assert block.slot == proposer_duty.slot
+    # TODO: Assert correct block.proposer_index
+    assert not vc_is_slashable_block(block, proposer_duty.pubkey)
+
+def consensus_on_block(proposer_duty: ProposerDuty) -> AttestationData:
+    """Consensus protocol between distributed validator nodes for block values.
+    Returns the decided value.
+    The consensus protocol must use `consensus_is_valid_block` to determine
+    validity of the proposed block value.
+    """
+    pass
+
 
 """
 Attestation Production Process:
@@ -22,7 +63,7 @@ https://github.com/ethereum/beacon-APIs/blob/05c1bc142e1a3fb2a63c790987437762413
 def serve_attestation_duty(attestation_duty):
     # Obtain lock on consensus process here - only a single consensus instance
     # should be running at any given time
-    attestation_data = consensus(attestation_duty)
+    attestation_data = consensus_on_attestation(attestation_duty)
 
     # 1. Threshold sign attestation from local VC
     threshold_signed_attestation = vc_sign_attestation(attestation_data, attestation_duty)
