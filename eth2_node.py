@@ -57,6 +57,12 @@ def bn_produce_block(slot: Slot, randao_reveal: BLSSignature, graffiti: Bytes32)
     """
     pass
 
+def bn_submit_block(block: SignedBeaconBlock) -> None:
+    """Submit block to BN for p2p gossip.
+    Uses https://ethereum.github.io/beacon-APIs/#/ValidatorRequiredApi/publishBlock
+    """
+    pass
+
 
 # Validator Client Interface
 

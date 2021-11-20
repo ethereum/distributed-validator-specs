@@ -6,6 +6,7 @@ from eth2_node import (
     bn_submit_attestation,
     bn_get_proposer_duties_for_epoch,
     bn_produce_block,
+    bn_submit_block,
     vc_is_slashable_attestation_data,
     vc_sign_attestation,
     vc_is_slashable_block,
@@ -61,8 +62,9 @@ https://github.com/ethereum/beacon-APIs/blob/05c1bc142e1a3fb2a63c790987437762413
 """
 
 def serve_attestation_duty(attestation_duty):
-    # Obtain lock on consensus process here - only a single consensus instance
-    # should be running at any given time
+    # Obtain lock on consensus_on_attestation here.
+    # Only a single consensus_on_attestation instance should be
+    # running at any given time
     attestation_data = consensus_on_attestation(attestation_duty)
 
     # 1. Threshold sign attestation from local VC
@@ -73,7 +75,7 @@ def serve_attestation_duty(attestation_duty):
     # 4. Send complete signed attestation to BN for broadcast
     bn_submit_attestation(complete_signed_attestation)
 
-    # Release lock on consensus process here
+    # Release lock on consensus_on_attestation here.
 
 """
 Block Production Process:
@@ -87,4 +89,17 @@ https://github.com/ethereum/beacon-APIs/blob/05c1bc142e1a3fb2a63c790987437762413
 """
 
 def serve_proposer_duty(proposer_duty):
-    pass
+    # Obtain lock on consensus_on_block here.
+    # Only a single consensus_on_block instance should be
+    # running at any given time
+    block = consensus_on_block(proposer_duty)
+
+    # 1. Threshold sign block from local VC
+    threshold_signed_block = vc_sign_block(block, proposer_duty)
+    # 2. Broadcast threshold signed block
+    # 3. Reconstruct complete signed block by combining threshold signed blocks
+    complete_signed_block = threshold_signed_block
+    # 4. Send complete signed block to BN for broadcast
+    bn_submit_block(complete_signed_block)
+
+    # Release lock on consensus_on_block here.
