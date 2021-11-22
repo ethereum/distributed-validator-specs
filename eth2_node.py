@@ -16,6 +16,7 @@ class AttestationDuty(Container):
     committees_at_slot: uint64
     validator_committee_index: ValidatorIndex # TODO: Is this the correct datatype?
     slot: Slot
+    validator_index: ValidatorIndex
 
 class ProposerDuty(Container):
     pubkey: BLSPubkey
