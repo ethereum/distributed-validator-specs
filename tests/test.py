@@ -7,7 +7,7 @@ from eth2spec.phase0.mainnet import (
     compute_epoch_at_slot,
     config,
 )
-from eth2_node import (
+from dvspec.eth_node_interface import (
     List,
     AttestationDuty, ProposerDuty,
     Container, SignedBeaconBlock, uint64, Bytes32,

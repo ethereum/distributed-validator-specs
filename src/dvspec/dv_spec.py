@@ -1,4 +1,4 @@
-from eth2_node import (
+from dvspec.eth_node_interface import (
     AttestationDuty, ProposerDuty,
     AttestationData, BeaconBlock,
     bn_get_attestation_duties_for_epoch,
