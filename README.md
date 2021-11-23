@@ -1,20 +1,23 @@
 # Ethereum Distributed Validator Specification
 
-This repo is WIP. Dumping stuff here for now, will clean up soon.
+Distributed Validators allow for implementing an Ethereum validator using a set of distributed nodes in a way that improves the resilience as compared to running a client on a single machine.
 
-## General Architecture
+## Introduction
 
-`Beacon Node <--> SSV Node <--> Validator Client`
+![General Architecture](figures/general-architecture.png)
 
-SSV Node sits in the middle of the BN and VC. The VC implementation is unchanged (or minimal necessary changes).
+This specification presents a way to implement Distributed Validator software as middleware between the Beacon Node and Validator Client. 
 
-## Desired Properties
-- Safety: Validator is never slashed unless `X` fraction of the SSV-VC nodes are Byzantine, even under asynchronous network
+### Desired Guarantees
+- Safety: Validator is never slashed unless `X` fraction of the Validator Client nodes are Byzantine, even under asynchronous network
 - No Deadlock: The protocol never ends up in a deadlock state where no progress can be made
 - Liveness: The protocol will eventually produce a new attestation/block, under partially synchronous network
 
+### Assumptions
+- This specification assumes [some leader-based consensus protocol](src/dvspec/consensus.py) for the DV nodes to decide on signing upon the same attestation/block.
+- We disregard the voting on the "correct" Ethereum fork for now - this functionality will be added in a future update.
 
-## Design Rationale
+### Design Rationale
 - Validity of attestation data must be checked against the slashing DB at the beginning of the consensus process
 - If the consensus process returns an attestation, then the slashing DB must allow it at that time
 - There can only be one consensus process running at any given moment
@@ -23,19 +26,12 @@ SSV Node sits in the middle of the BN and VC. The VC implementation is unchanged
 
 ## Spec
 
-Assuming some round based consensus protocol with leader.
+The distributed validator [specification](src/dvspec/spec.py) defines the behavior of the distributed validator regarding attestation & block production processes. It utilizes the [standard Ethereum node interface](src/dvspec/eth_node_interface.py) to communicate with the associated Beacon Node & Validator Client.
 
-### Attestation Production
+### Attestation Production Process
 
-Leader:
-- Get attestation data from BN
-- Propose attestation in consensus protocol
+![UML for Attestation Production Process](figures/dv-attestation-production-process.png)
 
-Node:
-- Follow consensus protocol: wait for proposal, make pre-vote, etc.
-- To determine validity of the proposal, check against for unslashability in the slashing DB.
-- When consensus returns a value, submit value to VC for threshold signing
-- Broadcast & combine threshold signed values to generate complete signed value
-- Send complete signed value to BN for p2p gossip
+### Block Production Process
 
-Disregard voting for the correct fork for now. 
+![UML for Block Production Process](figures/dv-block-production-process.png)
