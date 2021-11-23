@@ -41,7 +41,7 @@ def bn_get_attestation_data(slot: Slot, committee_index: CommitteeIndex) -> Atte
     pass
 
 def bn_submit_attestation(attestation: Attestation) -> None:
-    """Submit attestation to BN for p2p gossip.
+    """Submit attestation to BN for Ethereum p2p gossip.
     Uses https://ethereum.github.io/beacon-APIs/#/Beacon/submitPoolAttestations
     """
     pass
@@ -59,7 +59,7 @@ def bn_produce_block(slot: Slot, randao_reveal: BLSSignature, graffiti: Bytes32)
     pass
 
 def bn_submit_block(block: SignedBeaconBlock) -> None:
-    """Submit block to BN for p2p gossip.
+    """Submit block to BN for Ethereum p2p gossip.
     Uses https://ethereum.github.io/beacon-APIs/#/ValidatorRequiredApi/publishBlock
     """
     pass
