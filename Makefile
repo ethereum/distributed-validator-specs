@@ -29,4 +29,3 @@ venv_lint: venv_activate
 
 venv_test: venv_activate
 	@echo "TODO: implement tests"
-

@@ -55,7 +55,6 @@ def serve_attestation_duty(attestation_duty: AttestationDuty) -> None:
     2. For each attestation_duty received in Step 1, schedule
         serve_attestation_duty(attestation_duty) at 1/3rd way through the slot
         attestation_duty.slot
-
     See notes here:
     https://github.com/ethereum/beacon-APIs/blob/05c1bc142e1a3fb2a63c79098743776241341d08/validator-flow.md#attestation
     """
@@ -77,7 +76,6 @@ def serve_proposer_duty(proposer_duty: ProposerDuty) -> None:
         bn_get_proposer_duties_for_epoch(epoch+1)
     2. For each proposer_duty received in Step 1 for our validators, schedule
         serve_proposer_duty(proposer_duty) at beginning of slot proposer_duty.slot
-
     See notes here:
     https://github.com/ethereum/beacon-APIs/blob/05c1bc142e1a3fb2a63c79098743776241341d08/validator-flow.md#block-proposing
     """
