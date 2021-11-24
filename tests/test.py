@@ -1,23 +1,25 @@
 import random
 
 from eth2spec.phase0.mainnet import (
+    MAX_COMMITTEES_PER_SLOT,
     SLOTS_PER_EPOCH,
     TARGET_COMMITTEE_SIZE,
+    Attestation,
+    AttestationData,
+    BeaconBlock,
     Checkpoint,
     compute_epoch_at_slot,
     compute_start_slot_at_epoch,
-    is_slashable_attestation_data
+    is_slashable_attestation_data,
+    SignedBeaconBlock,
 )
 from typing import (
     Dict,
     Iterator,
 )
 
-from dvspec.eth_node_interface import (
-    Attestation,
-    AttestationData,
+from dvspec.utils.types import (
     AttestationDuty,
-    BeaconBlock,
     BLSPubkey,
     BLSSignature,
     Bytes32,
@@ -25,7 +27,6 @@ from dvspec.eth_node_interface import (
     Epoch,
     List,
     ProposerDuty,
-    SignedBeaconBlock,
     Slot,
     ValidatorIndex,
 )
@@ -57,8 +58,11 @@ def bn_get_attestation_duties_for_epoch(validator_indices: List[ValidatorIndex],
     for validator_index in validator_indices:
         start_slot_at_epoch = compute_start_slot_at_epoch(epoch)
         attestation_slot = start_slot_at_epoch + random.randrange(SLOTS_PER_EPOCH)
-        attestation_duty = AttestationDuty(validator_index=validator_index,
+        attestation_duty = AttestationDuty(pubkey=BLSPubkey(0x00),
+                                           validator_index=validator_index,
+                                           committee_index=random.randrange(MAX_COMMITTEES_PER_SLOT),
                                            committee_length=TARGET_COMMITTEE_SIZE,
+                                           committees_at_slot=MAX_COMMITTEES_PER_SLOT,
                                            validator_committee_index=random.randrange(TARGET_COMMITTEE_SIZE),
                                            slot=attestation_slot)
         attestation_duties.append(attestation_duty)
@@ -82,7 +86,7 @@ def bn_get_proposer_duties_for_epoch(epoch: Epoch) -> List[ProposerDuty]:
     validator_indices = [x for x in range(VALIDATOR_SET_SIZE)]
     random.shuffle(validator_indices)
     for i in range(SLOTS_PER_EPOCH):
-        proposer_duties.append(ProposerDuty(validator_index=validator_indices[i], slot=i))
+        proposer_duties.append(ProposerDuty(pubkey=BLSPubkey(0x00), validator_index=validator_indices[i], slot=i))
     return proposer_duties
 
 

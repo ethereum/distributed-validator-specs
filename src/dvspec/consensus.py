@@ -1,23 +1,40 @@
 from dvspec.eth_node_interface import (
     AttestationData,
-    AttestationDuty,
     BeaconBlock,
-    ProposerDuty,
-    vc_is_slashable_attestation_data,
-    vc_is_slashable_block
 )
+from utils.types import (
+    AttestationDuty,
+    BLSPubkey,
+    ProposerDuty,
+    SlashingDB,
+)
+
+"""
+Helper Functions
+"""
+
+
+def is_slashable_attestation_data(slashing_db: SlashingDB,
+                                  attestation_data: AttestationData, pubkey: BLSPubkey) -> bool:
+    pass
+
+
+def is_slashable_block(slashing_db: SlashingDB, block: BeaconBlock, pubkey: BLSPubkey) -> bool:
+    pass
+
 
 """
 Consensus Specification
 """
 
 
-def consensus_is_valid_attestation_data(attestation_data: AttestationData, attestation_duty: AttestationDuty) -> bool:
+def consensus_is_valid_attestation_data(slashing_db: SlashingDB,
+                                        attestation_data: AttestationData, attestation_duty: AttestationDuty) -> bool:
     """Determines if the given attestation is valid for the attestation duty.
     """
     assert attestation_data.slot == attestation_duty.slot
     assert attestation_data.committee_index == attestation_duty.committee_index
-    assert not vc_is_slashable_attestation_data(attestation_data, attestation_duty.pubkey)
+    assert not is_slashable_attestation_data(slashing_db, attestation_data, attestation_duty.pubkey)
     return True
 
 
@@ -30,12 +47,12 @@ def consensus_on_attestation(attestation_duty: AttestationDuty) -> AttestationDa
     pass
 
 
-def consensus_is_valid_block(block: BeaconBlock, proposer_duty: ProposerDuty) -> bool:
+def consensus_is_valid_block(slashing_db: SlashingDB, block: BeaconBlock, proposer_duty: ProposerDuty) -> bool:
     """Determines if the given block is valid for the proposer duty.
     """
     assert block.slot == proposer_duty.slot
     # TODO: Assert correct block.proposer_index
-    assert not vc_is_slashable_block(block, proposer_duty.pubkey)
+    assert not is_slashable_block(slashing_db, block, proposer_duty.pubkey)
     return True
 
 

@@ -3,33 +3,19 @@ from eth2spec.phase0.mainnet import (
     Attestation,
     AttestationData,
     BeaconBlock,
-    BLSPubkey,
+    SignedBeaconBlock,
+)
+
+from utils.types import (
+    AttestationDuty,
     BLSSignature,
     Bytes32,
     CommitteeIndex,
-    Container,
     Epoch,
-    SignedBeaconBlock,
+    ProposerDuty,
     Slot,
-    uint64,
     ValidatorIndex,
 )
-
-
-class AttestationDuty(Container):
-    pubkey: BLSPubkey
-    validator_index: ValidatorIndex
-    committee_index: CommitteeIndex
-    committee_length: uint64
-    committees_at_slot: uint64
-    validator_committee_index: ValidatorIndex  # TODO: Is this the correct datatype?
-    slot: Slot
-
-
-class ProposerDuty(Container):
-    pubkey: BLSPubkey
-    validator_index: ValidatorIndex
-    slot: Slot
 
 
 # Beacon Node Interface
@@ -80,12 +66,6 @@ def bn_submit_block(block: SignedBeaconBlock) -> None:
 
 # Validator Client Interface
 
-def vc_is_slashable_attestation_data(attestation_data: AttestationData, validator_pubkey: BLSPubkey) -> bool:
-    """Checks whether the attestation data is slashable according to the anti-slashing database.
-    This endpoint does not exist in beacon-APIs.
-    """
-    pass
-
 
 def vc_sign_attestation(attestation_data: AttestationData, attestation_duty: AttestationDuty) -> Attestation:
     """Returns a signed attestations that is constructed using the given attestation data & attestation duty.
@@ -93,13 +73,6 @@ def vc_sign_attestation(attestation_data: AttestationData, attestation_duty: Att
     """
     # See note about attestation construction here:
     # https://github.com/ethereum/beacon-APIs/blame/05c1bc142e1a3fb2a63c79098743776241341d08/validator-flow.md#L35-L37
-    pass
-
-
-def vc_is_slashable_block(block: BeaconBlock, validator_pubkey: BLSPubkey) -> bool:
-    """Checks whether the block is slashable according to the anti-slashing database.
-    This endpoint does not exist in beacon-APIs.
-    """
     pass
 
 

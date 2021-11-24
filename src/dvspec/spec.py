@@ -1,3 +1,8 @@
+from dataclasses import dataclass
+from typing import (
+    List,
+)
+
 from dvspec.eth_node_interface import (
     AttestationDuty,
     bn_submit_attestation,
@@ -18,6 +23,28 @@ from dvspec.networking import (
     listen_for_threshold_signed_attestations,
     listen_for_threshold_signed_blocks
 )
+from utils.types import (
+    BLSPubkey,
+    SlashingDB,
+    UInt64
+)
+
+
+@dataclass
+class CoValidator:
+    pubkey: BLSPubkey
+    index: UInt64
+
+
+@dataclass
+class DistributedValidator:
+    co_validators: List[CoValidator]
+    slashing_db: SlashingDB
+
+
+@dataclass
+class State:
+    distributed_validators: List[DistributedValidator]
 
 
 def serve_attestation_duty(attestation_duty: AttestationDuty) -> None:
