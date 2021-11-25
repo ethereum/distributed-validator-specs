@@ -23,7 +23,7 @@ from dvspec.networking import (
     listen_for_threshold_signed_attestations,
     listen_for_threshold_signed_blocks
 )
-from utils.types import (
+from dvspec.utils.types import (
     BLSPubkey,
     SlashingDB,
     UInt64
@@ -31,13 +31,32 @@ from utils.types import (
 
 
 @dataclass
-class CoValidator:
+class ValidatorIdentity:
+    """Identity of the Ethereum validator.
+    """
+    # Ethereum public key
     pubkey: BLSPubkey
+    # Index of Ethereum validator
+    index: UInt64
+
+
+@dataclass
+class CoValidator:
+    """Identity of distributed co-validator participating in the DV protocol.
+    """
+    # Identity of Ethereum validator that this co-validator performs duties for
+    validator_identity: ValidatorIdentity
+    # Secret-shared public key
+    pubkey: BLSPubkey
+    # Index of the co-validator in the distributed validator protocol
     index: UInt64
 
 
 @dataclass
 class DistributedValidator:
+    """State object that tracks a single Ethereum validator being run using the distributed validator protocol.
+    """
+    validator_identity: ValidatorIdentity
     co_validators: List[CoValidator]
     slashing_db: SlashingDB
 
