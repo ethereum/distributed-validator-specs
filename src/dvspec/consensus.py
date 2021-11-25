@@ -1,8 +1,10 @@
+import eth2spec.phase0.mainnet as eth2spec
+
 from dvspec.eth_node_interface import (
     AttestationData,
     BeaconBlock,
 )
-from utils.types import (
+from dvspec.utils.types import (
     AttestationDuty,
     BLSPubkey,
     ProposerDuty,
@@ -16,11 +18,47 @@ Helper Functions
 
 def is_slashable_attestation_data(slashing_db: SlashingDB,
                                   attestation_data: AttestationData, pubkey: BLSPubkey) -> bool:
-    pass
+    matching_slashing_db_data = [data for data in slashing_db.data if data.pubkey == pubkey]
+    if matching_slashing_db_data == []:
+        return True
+    assert len(matching_slashing_db_data) == 1
+    slashing_db_data = matching_slashing_db_data[0]
+    # Check for EIP-3076 conditions:
+    # https://eips.ethereum.org/EIPS/eip-3076#conditions
+    if slashing_db_data.signed_attestations != []:
+        min_target = min(attn.target_epoch for attn in slashing_db_data.signed_attestations)
+        min_source = min(attn.source_epoch for attn in slashing_db_data.signed_attestations)
+        if attestation_data.target.epoch <= min_target:
+            return True
+        if attestation_data.source.epoch < min_source:
+            return True
+    for past_attn in slashing_db_data.signed_attestations:
+        past_attn_data = AttestationData(source=past_attn.source_epoch, target=past_attn.target_epoch)
+        if eth2spec.is_slashable_attestation_data(past_attn_data, attestation_data):
+            return True
+    return False
 
 
 def is_slashable_block(slashing_db: SlashingDB, block: BeaconBlock, pubkey: BLSPubkey) -> bool:
-    pass
+    matching_slashing_db_data = [data for data in slashing_db.data if data.pubkey == pubkey]
+    if matching_slashing_db_data == []:
+        return False
+    assert len(matching_slashing_db_data) == 1
+    slashing_db_data = matching_slashing_db_data[0]
+    # Check for EIP-3076 conditions:
+    # https://eips.ethereum.org/EIPS/eip-3076#conditions
+    if slashing_db_data.signed_blocks != []:
+        min_block = slashing_db_data.signed_blocks[0]
+        for b in slashing_db_data.signed_blocks[1:]:
+            if b.slot < min_block.slot:
+                min_block = b
+        if block.slot < min_block.slot:
+            return True
+    for past_block in slashing_db_data.signed_blocks:
+        if past_block.slot == block.slot:
+            if past_block.signing_root() != block.hash_tree_root():
+                return True
+    return False
 
 
 """
