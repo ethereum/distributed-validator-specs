@@ -3,7 +3,7 @@ from typing import (
     List,
 )
 
-from dvspec.eth_node_interface import (
+from .eth_node_interface import (
     AttestationDuty,
     bn_submit_attestation,
     bn_submit_block,
@@ -11,11 +11,11 @@ from dvspec.eth_node_interface import (
     vc_sign_attestation,
     vc_sign_block,
 )
-from dvspec.consensus import (
+from .consensus import (
     consensus_on_attestation,
     consensus_on_block,
 )
-from dvspec.networking import (
+from .networking import (
     broadcast_threshold_signed_attestation,
     broadcast_threshold_signed_block,
     construct_signed_attestation,
@@ -23,7 +23,7 @@ from dvspec.networking import (
     listen_for_threshold_signed_attestations,
     listen_for_threshold_signed_blocks
 )
-from dvspec.utils.types import (
+from .utils.types import (
     BLSPubkey,
     SlashingDB,
     UInt64

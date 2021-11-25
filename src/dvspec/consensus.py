@@ -1,10 +1,10 @@
 import eth2spec.phase0.mainnet as eth2spec
 
-from dvspec.eth_node_interface import (
+from .eth_node_interface import (
     AttestationData,
     BeaconBlock,
 )
-from dvspec.utils.types import (
+from .utils.types import (
     AttestationDuty,
     BLSPubkey,
     ProposerDuty,

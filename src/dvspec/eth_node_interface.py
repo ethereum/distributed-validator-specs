@@ -6,7 +6,7 @@ from eth2spec.phase0.mainnet import (
     SignedBeaconBlock,
 )
 
-from dvspec.utils.types import (
+from .utils.types import (
     AttestationDuty,
     BLSSignature,
     Bytes32,
