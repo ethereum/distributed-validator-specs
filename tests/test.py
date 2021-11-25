@@ -1,23 +1,28 @@
 import random
 
 from eth2spec.phase0.mainnet import (
+    MAX_COMMITTEES_PER_SLOT,
     SLOTS_PER_EPOCH,
     TARGET_COMMITTEE_SIZE,
+    Attestation,
+    AttestationData,
+    BeaconBlock,
     Checkpoint,
     compute_epoch_at_slot,
     compute_start_slot_at_epoch,
-    is_slashable_attestation_data
+    SignedBeaconBlock,
 )
 from typing import (
     Dict,
     Iterator,
 )
 
-from dvspec.eth_node_interface import (
-    Attestation,
-    AttestationData,
+from dvspec.consensus import (
+    is_slashable_attestation_data,
+    is_slashable_block,
+)
+from dvspec.utils.types import (
     AttestationDuty,
-    BeaconBlock,
     BLSPubkey,
     BLSSignature,
     Bytes32,
@@ -25,14 +30,36 @@ from dvspec.eth_node_interface import (
     Epoch,
     List,
     ProposerDuty,
-    SignedBeaconBlock,
+    Root,
+    SlashingDB,
+    SlashingDBAttestation,
+    SlashingDBBlock,
     Slot,
     ValidatorIndex,
 )
+from dvspec.spec import (
+    CoValidator,
+    DistributedValidator,
+    State,
+    ValidatorIdentity,
+)
 
 VALIDATOR_SET_SIZE = SLOTS_PER_EPOCH
-VALIDATOR_INDICES = [1, 2, 3]
 GENESIS_TIME = 0
+
+
+validator_identity = ValidatorIdentity(pubkey=BLSPubkey(0x00), index=1234)
+co_validators = []
+for i in range(1, 4):
+    co_validators.append(CoValidator(validator_identity=validator_identity, pubkey=BLSPubkey(0x00), index=i))
+slashing_db = SlashingDB(interchange_format_version=5,
+                         genesis_validators_root=Root(),
+                         data=[])
+distributed_validator = DistributedValidator(validator_identity=validator_identity,
+                                             co_validators=co_validators,
+                                             slashing_db=slashing_db)
+distributed_validators = [distributed_validator]
+state = State(distributed_validators=distributed_validators)
 
 
 def time_generator() -> Iterator[int]:
@@ -57,8 +84,11 @@ def bn_get_attestation_duties_for_epoch(validator_indices: List[ValidatorIndex],
     for validator_index in validator_indices:
         start_slot_at_epoch = compute_start_slot_at_epoch(epoch)
         attestation_slot = start_slot_at_epoch + random.randrange(SLOTS_PER_EPOCH)
-        attestation_duty = AttestationDuty(validator_index=validator_index,
+        attestation_duty = AttestationDuty(pubkey=BLSPubkey(0x00),
+                                           validator_index=validator_index,
+                                           committee_index=random.randrange(MAX_COMMITTEES_PER_SLOT),
                                            committee_length=TARGET_COMMITTEE_SIZE,
+                                           committees_at_slot=MAX_COMMITTEES_PER_SLOT,
                                            validator_committee_index=random.randrange(TARGET_COMMITTEE_SIZE),
                                            slot=attestation_slot)
         attestation_duties.append(attestation_duty)
@@ -82,7 +112,7 @@ def bn_get_proposer_duties_for_epoch(epoch: Epoch) -> List[ProposerDuty]:
     validator_indices = [x for x in range(VALIDATOR_SET_SIZE)]
     random.shuffle(validator_indices)
     for i in range(SLOTS_PER_EPOCH):
-        proposer_duties.append(ProposerDuty(validator_index=validator_indices[i], slot=i))
+        proposer_duties.append(ProposerDuty(pubkey=BLSPubkey(0x00), validator_index=validator_indices[i], slot=i))
     return proposer_duties
 
 
@@ -96,25 +126,23 @@ def bn_produce_block(slot: Slot, randao_reveal: BLSSignature, graffiti: Bytes32)
 
 # Validator Client Methods
 
-attestation_slashing_db: Dict[BLSPubkey, AttestationData] = {}
-
 
 def update_attestation_slashing_db(attestation_data: AttestationData, validator_pubkey: BLSPubkey) -> None:
     """Check that the attestation data is not slashable for the validator and
     add attestation to slashing DB.
     """
-    if validator_pubkey not in attestation_slashing_db:
-        attestation_slashing_db[validator_pubkey] = set()
-    assert not vc_is_slashable_attestation_data(attestation_data, validator_pubkey)
-    attestation_slashing_db[validator_pubkey].add(attestation_data)
-
-
-def vc_is_slashable_attestation_data(attestation_data: AttestationData, validator_pubkey: BLSPubkey) -> bool:
-    if validator_pubkey in attestation_slashing_db:
-        for past_attestation_data in attestation_slashing_db[validator_pubkey]:
-            if is_slashable_attestation_data(past_attestation_data, attestation_data):
-                return True
-    return False
+    # Find the correct distributed validator
+    distributed_validators = [dv for dv in state.distributed_validators
+                              if dv.validator_identity.pubkey == validator_pubkey]
+    assert len(distributed_validators) == 1
+    distributed_validator = distributed_validators[0]
+    # Find the correct slashing DB
+    slashing_db = distributed_validator.slashing_db
+    assert not is_slashable_attestation_data(slashing_db, attestation_data, validator_pubkey)
+    slashing_db.data.signed_attestations.append(SlashingDBAttestation(source_epoch=attestation_data.source.epoch,
+                                                                      target_epoch=attestation_data.target.epoch,
+                                                                      signing_root=attestation_data.hash_tree_root()))
+    # TODO: Check correct usage of signing_root ^^
 
 
 def vc_sign_attestation(attestation_data: AttestationData, attestation_duty: AttestationDuty) -> Attestation:
@@ -131,18 +159,17 @@ def update_block_slashing_db(block: BeaconBlock, validator_pubkey: BLSPubkey) ->
     """Check that the block is not slashable for the validator and
     add block to slashing DB.
     """
-    if validator_pubkey not in block_slashing_db:
-        block_slashing_db[validator_pubkey] = set()
-    assert not vc_is_slashable_block(block, validator_pubkey)
-    block_slashing_db[validator_pubkey].add(block)
-
-
-def vc_is_slashable_block(block: BeaconBlock, validator_pubkey: BLSPubkey) -> bool:
-    if validator_pubkey in block_slashing_db:
-        for past_block in block_slashing_db[validator_pubkey]:
-            if past_block.slot == block.slot:
-                return True
-    return False
+    # Find the correct distributed validator
+    distributed_validators = [dv for dv in state.distributed_validators
+                              if dv.validator_identity.pubkey == validator_pubkey]
+    assert len(distributed_validators) == 1
+    distributed_validator = distributed_validators[0]
+    # Find the correct slashing DB
+    slashing_db = distributed_validator.slashing_db
+    assert not is_slashable_block(slashing_db, block, validator_pubkey)
+    slashing_db.data.signed_blocks.append(SlashingDBBlock(slot=block.slot,
+                                                          signing_root=block.hash_tree_root()))
+    # TODO: Check correct usage of signing_root ^^
 
 
 def vc_sign_block(block: BeaconBlock, proposer_duty: ProposerDuty) -> SignedBeaconBlock:

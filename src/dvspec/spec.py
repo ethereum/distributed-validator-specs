@@ -1,4 +1,9 @@
-from dvspec.eth_node_interface import (
+from dataclasses import dataclass
+from typing import (
+    List,
+)
+
+from .eth_node_interface import (
     AttestationDuty,
     bn_submit_attestation,
     bn_submit_block,
@@ -6,11 +11,11 @@ from dvspec.eth_node_interface import (
     vc_sign_attestation,
     vc_sign_block,
 )
-from dvspec.consensus import (
+from .consensus import (
     consensus_on_attestation,
     consensus_on_block,
 )
-from dvspec.networking import (
+from .networking import (
     broadcast_threshold_signed_attestation,
     broadcast_threshold_signed_block,
     construct_signed_attestation,
@@ -18,6 +23,47 @@ from dvspec.networking import (
     listen_for_threshold_signed_attestations,
     listen_for_threshold_signed_blocks
 )
+from .utils.types import (
+    BLSPubkey,
+    SlashingDB,
+    UInt64
+)
+
+
+@dataclass
+class ValidatorIdentity:
+    """Identity of the Ethereum validator.
+    """
+    # Ethereum public key
+    pubkey: BLSPubkey
+    # Index of Ethereum validator
+    index: UInt64
+
+
+@dataclass
+class CoValidator:
+    """Identity of distributed co-validator participating in the DV protocol.
+    """
+    # Identity of Ethereum validator that this co-validator performs duties for
+    validator_identity: ValidatorIdentity
+    # Secret-shared public key
+    pubkey: BLSPubkey
+    # Index of the co-validator in the distributed validator protocol
+    index: UInt64
+
+
+@dataclass
+class DistributedValidator:
+    """State object that tracks a single Ethereum validator being run using the distributed validator protocol.
+    """
+    validator_identity: ValidatorIdentity
+    co_validators: List[CoValidator]
+    slashing_db: SlashingDB
+
+
+@dataclass
+class State:
+    distributed_validators: List[DistributedValidator]
 
 
 def serve_attestation_duty(attestation_duty: AttestationDuty) -> None:
@@ -28,7 +74,6 @@ def serve_attestation_duty(attestation_duty: AttestationDuty) -> None:
     2. For each attestation_duty received in Step 1, schedule
         serve_attestation_duty(attestation_duty) at 1/3rd way through the slot
         attestation_duty.slot
-
     See notes here:
     https://github.com/ethereum/beacon-APIs/blob/05c1bc142e1a3fb2a63c79098743776241341d08/validator-flow.md#attestation
     """
@@ -50,7 +95,6 @@ def serve_proposer_duty(proposer_duty: ProposerDuty) -> None:
         bn_get_proposer_duties_for_epoch(epoch+1)
     2. For each proposer_duty received in Step 1 for our validators, schedule
         serve_proposer_duty(proposer_duty) at beginning of slot proposer_duty.slot
-
     See notes here:
     https://github.com/ethereum/beacon-APIs/blob/05c1bc142e1a3fb2a63c79098743776241341d08/validator-flow.md#block-proposing
     """
