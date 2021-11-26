@@ -95,7 +95,7 @@ def bn_get_attestation_duties_for_epoch(validator_indices: List[ValidatorIndex],
     return attestation_duties
 
 
-def bn_get_attestation_data(slot: Slot, committee_index: CommitteeIndex) -> AttestationData:
+def bn_produce_attestation_data(slot: Slot, committee_index: CommitteeIndex) -> AttestationData:
     attestation_data = AttestationData(slot=slot,
                                        index=committee_index,
                                        source=Checkpoint(epoch=min(compute_epoch_at_slot(slot) - 1, 0)),
@@ -138,8 +138,11 @@ def update_attestation_slashing_db(attestation_data: AttestationData, validator_
     distributed_validator = distributed_validators[0]
     # Find the correct slashing DB
     slashing_db = distributed_validator.slashing_db
+    slashing_db_data_list = [data for data in slashing_db.data if data.pubkey == validator_pubkey]
+    assert len(slashing_db_data_list) == 1
+    slashing_db_data = slashing_db_data_list[0]
     assert not is_slashable_attestation_data(slashing_db, attestation_data, validator_pubkey)
-    slashing_db.data.signed_attestations.append(SlashingDBAttestation(source_epoch=attestation_data.source.epoch,
+    slashing_db_data.signed_attestations.append(SlashingDBAttestation(source_epoch=attestation_data.source.epoch,
                                                                       target_epoch=attestation_data.target.epoch,
                                                                       signing_root=attestation_data.hash_tree_root()))
     # TODO: Check correct usage of signing_root ^^
@@ -166,8 +169,11 @@ def update_block_slashing_db(block: BeaconBlock, validator_pubkey: BLSPubkey) ->
     distributed_validator = distributed_validators[0]
     # Find the correct slashing DB
     slashing_db = distributed_validator.slashing_db
+    slashing_db_data_list = [data for data in slashing_db.data if data.pubkey == validator_pubkey]
+    assert len(slashing_db_data_list) == 1
+    slashing_db_data = slashing_db_data_list[0]
     assert not is_slashable_block(slashing_db, block, validator_pubkey)
-    slashing_db.data.signed_blocks.append(SlashingDBBlock(slot=block.slot,
+    slashing_db_data.signed_blocks.append(SlashingDBBlock(slot=block.slot,
                                                           signing_root=block.hash_tree_root()))
     # TODO: Check correct usage of signing_root ^^
 

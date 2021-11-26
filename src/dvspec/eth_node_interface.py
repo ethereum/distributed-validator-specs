@@ -29,7 +29,7 @@ def bn_get_attestation_duties_for_epoch(validator_indices: List[ValidatorIndex],
     pass
 
 
-def bn_get_attestation_data(slot: Slot, committee_index: CommitteeIndex) -> AttestationData:
+def bn_produce_attestation_data(slot: Slot, committee_index: CommitteeIndex) -> AttestationData:
     """Produces attestation data for the given slot & committee index.
     Uses https://ethereum.github.io/beacon-APIs/#/ValidatorRequiredApi/produceAttestationData
     """

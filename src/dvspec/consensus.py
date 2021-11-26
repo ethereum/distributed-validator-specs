@@ -56,7 +56,7 @@ def is_slashable_block(slashing_db: SlashingDB, block: BeaconBlock, pubkey: BLSP
             return True
     for past_block in slashing_db_data.signed_blocks:
         if past_block.slot == block.slot:
-            if past_block.signing_root() != block.hash_tree_root():
+            if past_block.signing_root != block.hash_tree_root():
                 return True
     return False
 
@@ -79,6 +79,7 @@ def consensus_is_valid_attestation_data(slashing_db: SlashingDB,
 def consensus_on_attestation(attestation_duty: AttestationDuty) -> AttestationData:
     """Consensus protocol between distributed validator nodes for attestation values.
     Returns the decided value.
+    If this DV is the leader, it must use `bn_produce_attestation_data` for the proposed value.
     The consensus protocol must use `consensus_is_valid_attestation_data` to determine
     validity of the proposed attestation value.
     """
@@ -97,6 +98,7 @@ def consensus_is_valid_block(slashing_db: SlashingDB, block: BeaconBlock, propos
 def consensus_on_block(proposer_duty: ProposerDuty) -> AttestationData:
     """Consensus protocol between distributed validator nodes for block values.
     Returns the decided value.
+    If this DV is the leader, it must use `bn_produce_block` for the proposed value.
     The consensus protocol must use `consensus_is_valid_block` to determine
     validity of the proposed block value.
     """
