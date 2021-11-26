@@ -6,6 +6,10 @@ from eth2spec.phase0.mainnet import (
     SignedBeaconBlock,
 )
 
+from .networking import (
+    broadcast_threshold_signed_attestation,
+    broadcast_threshold_signed_block
+)
 from .utils.types import (
     AttestationDuty,
     BLSSignature,
@@ -66,18 +70,42 @@ def bn_submit_block(block: SignedBeaconBlock) -> None:
 
 # Validator Client Interface
 
+"""
+The VC is connected to the BN through the DVC. The DVC pretends to be a proxy for the BN, except
+when:
+- VC asks for new attestation data or blocks using the following methods:
+    - https://ethereum.github.io/beacon-APIs/#/ValidatorRequiredApi/produceAttestationData
+    - https://ethereum.github.io/beacon-APIs/#/ValidatorRequiredApi/produceBlockV2
+- VC submits new threshold signed attestations or blocks using the following methods:
+    - https://ethereum.github.io/beacon-APIs/#/Beacon/submitPoolAttestations
+    - https://ethereum.github.io/beacon-APIs/#/ValidatorRequiredApi/publishBlock
+"""
 
-def vc_sign_attestation(attestation_data: AttestationData, attestation_duty: AttestationDuty) -> Attestation:
-    """Returns a signed attestations that is constructed using the given attestation data & attestation duty.
-    This endpoint does not exist in beacon-APIs.
+def cache_attestation_data_for_vc(attestation_data: AttestationData, attestation_duty: AttestationDuty) -> None:
+    """Cache attestation data to provide to VC when it seeks new attestation data using the following method:
+    https://ethereum.github.io/beacon-APIs/#/ValidatorRequiredApi/produceAttestationData
     """
-    # See note about attestation construction here:
-    # https://github.com/ethereum/beacon-APIs/blame/05c1bc142e1a3fb2a63c79098743776241341d08/validator-flow.md#L35-L37
     pass
 
 
-def vc_sign_block(block: BeaconBlock, proposer_duty: ProposerDuty) -> SignedBeaconBlock:
-    """Returns a signed beacon block using the validator index given in the proposer duty.
-    This endpoint does not exist in beacon-APIs.
+def cache_block_for_vc(block: BeaconBlock, proposer_duty: ProposerDuty) -> None:
+    """Cache block to provide to VC when it seeks a new block using the following method:
+    https://ethereum.github.io/beacon-APIs/#/ValidatorRequiredApi/produceAttestationData
     """
     pass
+
+
+def capture_threshold_signed_attestation(threshold_signed_attestation: Attestation) -> None:
+    """Captures a threshold signed attestation provided by the VC and starts the recombination process to
+    construct a complete signed attestation to submit to the BN. The VC submits the attestation using the following method:
+    https://ethereum.github.io/beacon-APIs/#/Beacon/submitPoolAttestations
+    """
+    broadcast_threshold_signed_attestation(threshold_signed_attestation)
+
+
+def capture_threhold_signed_block(threshold_signed_block: SignedBeaconBlock) -> None:
+    """Captures a threshold signed block provided by the VC and starts the recombination process to
+    construct a complete signed block to submit to the BN. The VC submits the block using the following method:
+    https://ethereum.github.io/beacon-APIs/#/ValidatorRequiredApi/publishBlock
+    """
+    broadcast_threshold_signed_block(threshold_signed_block)
