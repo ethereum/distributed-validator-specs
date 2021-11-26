@@ -5,19 +5,17 @@ from typing import (
 
 from .eth_node_interface import (
     AttestationDuty,
+    ProposerDuty,
     bn_submit_attestation,
     bn_submit_block,
-    ProposerDuty,
-    vc_sign_attestation,
-    vc_sign_block,
+    cache_attestation_data_for_vc,
+    cache_block_for_vc,
 )
 from .consensus import (
     consensus_on_attestation,
     consensus_on_block,
 )
 from .networking import (
-    broadcast_threshold_signed_attestation,
-    broadcast_threshold_signed_block,
     construct_signed_attestation,
     construct_signed_block,
     listen_for_threshold_signed_attestations,
@@ -81,11 +79,9 @@ def serve_attestation_duty(attestation_duty: AttestationDuty) -> None:
     # Only a single consensus_on_attestation instance should be
     # running at any given time
     attestation_data = consensus_on_attestation(attestation_duty)
-    # Threshold sign attestation from local VC
-    threshold_signed_attestation = vc_sign_attestation(attestation_data, attestation_duty)
     # Release lock on consensus_on_attestation here.
-    # Broadcast threshold signed attestation
-    broadcast_threshold_signed_attestation(threshold_signed_attestation)
+    # Cache decided attestation data value to provide to VC
+    cache_attestation_data_for_vc(attestation_data, attestation_duty)
 
 
 def serve_proposer_duty(proposer_duty: ProposerDuty) -> None:
@@ -102,12 +98,9 @@ def serve_proposer_duty(proposer_duty: ProposerDuty) -> None:
     # Only a single consensus_on_block instance should be
     # running at any given time
     block = consensus_on_block(proposer_duty)
-
-    # Threshold sign block from local VC
-    threshold_signed_block = vc_sign_block(block, proposer_duty)
     # Release lock on consensus_on_block here.
-    # Broadcast threshold signed block
-    broadcast_threshold_signed_block(threshold_signed_block)
+    # Cache decided block value to provide to VC
+    cache_block_for_vc(block, proposer_duty)
 
 
 def threshold_attestation_combination() -> None:
