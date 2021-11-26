@@ -81,6 +81,7 @@ when:
     - https://ethereum.github.io/beacon-APIs/#/ValidatorRequiredApi/publishBlock
 """
 
+
 def cache_attestation_data_for_vc(attestation_data: AttestationData, attestation_duty: AttestationDuty) -> None:
     """Cache attestation data to provide to VC when it seeks new attestation data using the following method:
     https://ethereum.github.io/beacon-APIs/#/ValidatorRequiredApi/produceAttestationData
@@ -97,8 +98,8 @@ def cache_block_for_vc(block: BeaconBlock, proposer_duty: ProposerDuty) -> None:
 
 def capture_threshold_signed_attestation(threshold_signed_attestation: Attestation) -> None:
     """Captures a threshold signed attestation provided by the VC and starts the recombination process to
-    construct a complete signed attestation to submit to the BN. The VC submits the attestation using the following method:
-    https://ethereum.github.io/beacon-APIs/#/Beacon/submitPoolAttestations
+    construct a complete signed attestation to submit to the BN. The VC submits the attestation using the
+    following method: https://ethereum.github.io/beacon-APIs/#/Beacon/submitPoolAttestations
     """
     broadcast_threshold_signed_attestation(threshold_signed_attestation)
 

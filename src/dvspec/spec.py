@@ -3,8 +3,6 @@ from typing import (
     List,
 )
 
-from eth2spec.phase0.mainnet import Attestation
-
 from .eth_node_interface import (
     AttestationDuty,
     ProposerDuty,
@@ -83,7 +81,7 @@ def serve_attestation_duty(attestation_duty: AttestationDuty) -> None:
     attestation_data = consensus_on_attestation(attestation_duty)
     # Release lock on consensus_on_attestation here.
     # Cache decided attestation data value to provide to VC
-    cache_block_for_vc(attestation_data, attestation_duty)
+    cache_attestation_data_for_vc(attestation_data, attestation_duty)
 
 
 def serve_proposer_duty(proposer_duty: ProposerDuty) -> None:
@@ -102,7 +100,7 @@ def serve_proposer_duty(proposer_duty: ProposerDuty) -> None:
     block = consensus_on_block(proposer_duty)
     # Release lock on consensus_on_block here.
     # Cache decided block value to provide to VC
-    cache_attestation_data_for_vc(block, proposer_duty)
+    cache_block_for_vc(block, proposer_duty)
 
 
 def threshold_attestation_combination() -> None:
