@@ -73,12 +73,18 @@ def bn_submit_block(block: SignedBeaconBlock) -> None:
 """
 The VC is connected to the BN through the DVC. The DVC pretends to be a proxy for the BN, except
 when:
-- VC asks for new attestation data or blocks using the following methods:
+- VC asks for its attestation, block proposal, or sync  duties using the following methods:
+    - https://ethereum.github.io/beacon-APIs/#/ValidatorRequiredApi/getAttesterDuties
+    - https://ethereum.github.io/beacon-APIs/#/ValidatorRequiredApi/getProposerDuties
+    - mhttps://ethereum.github.io/beacon-APIs/#/ValidatorRequiredApi/getSyncCommitteeDuties
+- VC asks for new attestation data, block, or sync duty using the following methods:
     - https://ethereum.github.io/beacon-APIs/#/ValidatorRequiredApi/produceAttestationData
     - https://ethereum.github.io/beacon-APIs/#/ValidatorRequiredApi/produceBlockV2
-- VC submits new threshold signed attestations or blocks using the following methods:
+    - https://ethereum.github.io/beacon-APIs/#/ValidatorRequiredApi/produceSyncCommitteeContribution
+- VC submits new threshold signed attestation, block proposal, or sync duty using the following methods:
     - https://ethereum.github.io/beacon-APIs/#/Beacon/submitPoolAttestations
     - https://ethereum.github.io/beacon-APIs/#/ValidatorRequiredApi/publishBlock
+    - https://ethereum.github.io/beacon-APIs/#/ValidatorRequiredApi/produceSyncCommitteeContribution
 """
 
 
