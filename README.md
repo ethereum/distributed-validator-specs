@@ -42,13 +42,12 @@ An Ethereum Validator's private key is secret-shared into *N* pieces, each assig
 This specification presents a way to implement Distributed Validator Client software as middleware between the Beacon Node and Validator Client. 
 
 ### Desired Guarantees
-- Safety (against key theft):
+- **Safety (against key theft)**:
     - The Validator's staking private key is secure unless security is compromised at more than *M* of the *N* Co-Validators.
-- Safety (against slashing): 
+- **Safety (against slashing)**: 
     - Under the assumption of an asynchronous network, the Validator is never slashed unless more than 2/3rd of the Co-Validators are Byzantine.
     - Under the assumption of a synchronous network, the Validator is never slashed unless more than 1/3rd of the Co-Validators are Byzantine.
-- No Deadlock: The protocol never ends up in a deadlock state where no progress can be made
-- Liveness: The protocol will eventually produce a new attestation/block, under partially synchronous network
+- **Liveness**: The protocol will eventually produce a new attestation/block, under partially synchronous network
 
 ### Assumptions
 - This specification assumes [some leader-based consensus protocol](src/dvspec/consensus.py) for the Co-Validators to decide on signing upon the same attestation/block.
