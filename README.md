@@ -4,12 +4,27 @@ Distributed Validators allow for implementing an Ethereum validator using a set 
 
 ## Introduction
 
+### Motivation
+Ethereum validators participate in the proof-of-stake protocol by signing messages (such as blocks or attestations) using their staking private key. The staking key is accessible only by the validator client software, which schedules the creation & signing of messages according to the duties assigned to the validator. Some risks involved in a traditional validator client setup are:
+- The staking private key resides in one location. If an adversary gains access to this key, it can create conflicting messages that result in slashing of the validator's deposit.
+    - Stakers who do not operate their own validator need to hand over their staking private key to the operator. They must trust the operator for the security of their staking private key.
+- If the validator client software is unable to create timely messages to perform validator duties, the validator suffers an inactivity leak that reduces its balance.
+    - This could happen due to causes such as software crashes, loss of network connection, hardware faults, etc.
+
+The Distributed Validator protocol presents a mitigation to the risks & concerns mentioned above. In addition, this protocol can be used to enable advanced staking setups such as decentralized staking pools.
+
+### General Architecture
+
 ![General Architecture](figures/general-architecture.png)
 
-This specification presents a way to implement Distributed Validator software as middleware between the Beacon Node and Validator Client. 
+This specification presents a way to implement Distributed Validator Client software as middleware between the Beacon Node and Validator Client. 
+
+**Note**: Refer to the [glossary](glossary.md) for an explanation of new terms introduced in the Distributed Validator specifications.
 
 ### Desired Guarantees
-- Safety: Validator is never slashed unless `X` fraction of the Validator Client nodes are Byzantine, even under asynchronous network
+- Safety: 
+    - Under the assumption of an asynchronous network, the Validator is never slashed unless more than 2/3rd of the Co-Validators are Byzantine.
+    - Under the assumption of a synchronous network, the Validator is never slashed unless more than 1/3rd of the Co-Validators are Byzantine.
 - No Deadlock: The protocol never ends up in a deadlock state where no progress can be made
 - Liveness: The protocol will eventually produce a new attestation/block, under partially synchronous network
 
