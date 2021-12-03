@@ -25,6 +25,16 @@ Ethereum proof-of-stake uses the BLS12-381 siganture scheme, in which the privat
 
 An Ethereum Validator's private key is secret-shared into *N* pieces, each assigned to a Co-Validator, such that at least *M* pieces are required to create a complete signature from the Validator. The Co-Validators collectively participate in the Distributed Validator protocol to generate blocks & attestations signed by the Validator that satisfy the Validator's assigned duties.
 
+### Resources
+
+#### Implementations
+- [`python-ssv`](https://github.com/dankrad/python-ssv): A proof-of-concept implementation of the distributed validator protocol in Python that interacts with the [Prysm Etherum client](https://github.com/prysmaticlabs/prysm).
+- [`ssv`](https://github.com/bloxapp/ssv): An implementation of the distributed validator protocol in Go that interacts with the [Prysm Etherum client](https://github.com/prysmaticlabs/prysm).
+
+#### Documents
+- [Distributed Validator Architecture Video Introduction](https://www.youtube.com/watch?v=awBX1SrXOhk)
+
+
 ### General Architecture
 
 ![General Architecture](figures/general-architecture.png)
