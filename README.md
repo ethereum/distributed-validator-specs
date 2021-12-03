@@ -19,7 +19,7 @@ The two fundamental concept behind Distributed Validators are:
 - **secret-sharing**: a secret is split into *N* shares such that at least *M* shares need to be combined to reconstruct the secret (known as *(M,N)-*secret-sharing).
 - **threshold signatures**: a private key is split into *N* pieces such that creating a signature from the corresponding public key over some data requires combining signatues from at least *M* pieces of the private key on the same data (known as *(M,N)-*threshold signatures).
 
-Ethereum proof-of-stake uses the BLS12-381 siganture scheme, in which the private keys can be *(M,N)-*secret-shared to implement *(M,N)-*threshold signatures.
+Ethereum proof-of-stake uses the BLS12-381 siganture scheme, in which the private keys can be *(M,N)-* secret-shared to implement *(M,N)-* threshold signatures.
 
 **Note**: Refer to the [glossary](glossary.md) for an explanation of new terms introduced in the Distributed Validator specifications.
 
