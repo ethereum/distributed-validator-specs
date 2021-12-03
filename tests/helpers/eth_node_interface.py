@@ -84,14 +84,14 @@ Helpers for Ethereum node interaface methods
 """
 
 
-def fill_attestation_duties_with_val_index(state: State, attestation_duties: List[AttestationDuty]) -> List[AttestationDuty]:
+def fill_attestation_duties_with_val_index(state: State,
+                                           attestation_duties: List[AttestationDuty]) -> List[AttestationDuty]:
     val_index_to_pubkey = {}
     for dv in state.distributed_validators:
         val_index_to_pubkey[dv.validator_identity.index] = dv.validator_identity.pubkey
     for att_duty in attestation_duties:
         att_duty.pubkey = val_index_to_pubkey[att_duty.validator_index]
     return attestation_duties
-
 
 
 def fill_proposer_duties_with_val_index(state: State, proposer_duties: List[ProposerDuty]) -> List[ProposerDuty]:

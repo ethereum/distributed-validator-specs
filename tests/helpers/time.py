@@ -17,6 +17,7 @@ GENESIS_TIME = 0
 Time Methods
 """
 
+
 def time_generator() -> Iterator[int]:
     time = GENESIS_TIME
     while True:

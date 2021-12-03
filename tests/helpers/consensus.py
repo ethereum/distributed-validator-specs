@@ -33,6 +33,7 @@ def consensus_on_attestation(slashing_db: SlashingDB, attestation_duty: Attestat
     The consensus protocol must use `consensus_is_valid_attestation_data` to determine
     validity of the proposed attestation value.
     """
+    # TODO: Use this method in tests instead of dvspec.consensus.consensus_on_attestation
     attestation_data = bn_produce_attestation_data(attestation_duty.slot, attestation_duty.committee_index)
     assert consensus_is_valid_attestation_data(slashing_db, attestation_data)
     return attestation_data
@@ -45,4 +46,5 @@ def consensus_on_block(slashing_db: SlashingDB, proposer_duty: ProposerDuty) -> 
     The consensus protocol must use `consensus_is_valid_block` to determine
     validity of the proposed block value.
     """
+    # TODO: Implement & use this method in tests instead of dvspec.consensus.consensus_on_block
     pass

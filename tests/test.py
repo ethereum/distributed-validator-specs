@@ -20,7 +20,7 @@ from tests.helpers.eth_node_interface import (
 def test_basic_attestation():
     state = build_state(5)
     time = get_current_time()
-    
+
     current_epoch = compute_epoch_at_time(time)
     validator_indices = get_validator_indices(state)
     attestation_duties = bn_get_attestation_duties_for_epoch(validator_indices, current_epoch+1)

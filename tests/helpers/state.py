@@ -23,11 +23,11 @@ def build_distributed_validator(validator_identity: ValidatorIdentity, num_coval
     for i in range(1, num_covalidators):
         co_validators.append(CoValidator(validator_identity=validator_identity, pubkey=BLSPubkey(0x00), index=i))
     slashing_db = SlashingDB(interchange_format_version=5,
-                            genesis_validators_root=Root(),
-                            data=[])
+                             genesis_validators_root=Root(),
+                             data=[])
     distributed_validator = DistributedValidator(validator_identity=validator_identity,
-                                                co_validators=co_validators,
-                                                slashing_db=slashing_db)
+                                                 co_validators=co_validators,
+                                                 slashing_db=slashing_db)
     return distributed_validator
 
 
