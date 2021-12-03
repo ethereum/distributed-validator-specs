@@ -47,7 +47,7 @@ This specification presents a way to implement Distributed Validator Client soft
 - **Safety (against slashing)**: 
     - Under the assumption of an asynchronous network, the Validator is never slashed unless more than 2/3rd of the Co-Validators are Byzantine.
     - Under the assumption of a synchronous network, the Validator is never slashed unless more than 1/3rd of the Co-Validators are Byzantine.
-- **Liveness**: The protocol will eventually produce a new attestation/block under partially synchronous network unless more than 2/3rd of the Co-Validators are Byzantine.
+- **Liveness**: The protocol will eventually produce a new attestation/block under partially synchronous network unless more than 1/3rd of the Co-Validators are Byzantine.
 
 ### Assumptions
 - This specification assumes [some leader-based consensus protocol](src/dvspec/consensus.py) for the Co-Validators to decide on signing upon the same attestation/block.
