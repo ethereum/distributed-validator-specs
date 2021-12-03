@@ -21,7 +21,7 @@ Helpers for State
 def build_distributed_validator(validator_identity: ValidatorIdentity,
                                 num_covalidators: int = 4) -> DistributedValidator:
     co_validators = []
-    for i in range(1, num_covalidators):
+    for i in range(num_covalidators):
         co_validators.append(CoValidator(validator_identity=validator_identity, pubkey=BLSPubkey(0x00), index=i))
     slashing_db = SlashingDB(interchange_format_version=5,
                              genesis_validators_root=Root(),

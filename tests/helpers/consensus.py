@@ -33,6 +33,7 @@ def consensus_on_attestation(slashing_db: SlashingDB, attestation_duty: Attestat
     validity of the proposed attestation value.
     """
     # TODO: Use this method in tests instead of dvspec.consensus.consensus_on_attestation
+    print("This is the correct consensus_on_attestation")
     attestation_data = bn_produce_attestation_data(attestation_duty.slot, attestation_duty.committee_index)
     assert consensus_is_valid_attestation_data(slashing_db, attestation_data, attestation_duty)
     return attestation_data
@@ -46,6 +47,6 @@ def consensus_on_block(slashing_db: SlashingDB, proposer_duty: ProposerDuty) -> 
     validity of the proposed block value.
     """
     # TODO: Use this method in tests instead of dvspec.consensus.consensus_on_block
-    block = bn_produce_block(proposer_duty.slot, BLSSignature(0x00), Bytes32(0x00))
+    block = bn_produce_block(proposer_duty.slot, BLSSignature(b'0'*96), Bytes32(b'0'*32))
     assert consensus_is_valid_block(slashing_db, block, proposer_duty)
     return block

@@ -94,10 +94,13 @@ def fill_attestation_duties_with_val_index(state: State,
     return attestation_duties
 
 
-def fill_proposer_duties_with_val_index(state: State, proposer_duties: List[ProposerDuty]) -> List[ProposerDuty]:
+def filter_and_fill_proposer_duties_with_val_index(state: State, proposer_duties: List[ProposerDuty]) -> List[ProposerDuty]:
+    filtered_proposer_duties = []
     val_index_to_pubkey = {}
     for dv in state.distributed_validators:
         val_index_to_pubkey[dv.validator_identity.index] = dv.validator_identity.pubkey
     for pro_duty in proposer_duties:
-        pro_duty.pubkey = val_index_to_pubkey[pro_duty.validator_index]
-    return proposer_duties
+        if pro_duty.validator_index in val_index_to_pubkey:
+            pro_duty.pubkey = val_index_to_pubkey[pro_duty.validator_index]
+            filtered_proposer_duties.append(pro_duty)
+    return filtered_proposer_duties

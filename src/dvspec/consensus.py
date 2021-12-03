@@ -24,7 +24,7 @@ def consensus_is_valid_attestation_data(slashing_db: SlashingDB,
     """Determines if the given attestation is valid for the attestation duty.
     """
     assert attestation_data.slot == attestation_duty.slot
-    assert attestation_data.committee_index == attestation_duty.committee_index
+    assert attestation_data.index == attestation_duty.committee_index
     assert not is_slashable_attestation_data(slashing_db, attestation_data, attestation_duty.pubkey)
     return True
 
@@ -36,6 +36,7 @@ def consensus_on_attestation(slashing_db: SlashingDB, attestation_duty: Attestat
     The consensus protocol must use `consensus_is_valid_attestation_data` to determine
     validity of the proposed attestation value.
     """
+    print("This is the wrong consensus_on_attestation")
     pass
 
 

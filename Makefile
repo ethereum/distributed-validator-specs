@@ -28,4 +28,4 @@ venv_lint: venv_activate
 	$(VENV_ACTIVATE) && flake8 --config=flake8.ini ./src ./tests && mypy --config-file mypy.ini ./src ./tests
 
 venv_test: venv_activate
-	@echo "TODO: implement tests"
+	$(VENV_ACTIVATE) && ${VENV_NAME}/bin/python -m pytest tests/test.py
