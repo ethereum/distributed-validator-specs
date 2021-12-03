@@ -30,5 +30,6 @@ def test_basic_attestation():
     distributed_validator = get_distributed_validator_by_index(state, attestation_duty.validator_index)
     slashing_db = distributed_validator.slashing_db
 
-    # TODO: consensus_on_attestation is not implemented yet.
+    # TODO: Need to replace dvspec.consensus.consensus_on_attestation with
+    # tests.helpers.consensus.consensus_on_attestation
     serve_attestation_duty(slashing_db, attestation_duty)
