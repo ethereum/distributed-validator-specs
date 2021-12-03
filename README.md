@@ -20,14 +20,14 @@ The Distributed Validator protocol presents a solution to mitigate the risks & c
 ### Basic Concepts
 
 The two fundamental concepts behind Distributed Validators are:
-- **consensus**: the responsibilities of a single validator are split among several co-validators who must work together to reach agreement on how to vote before doing so
-- **threshold signatures**: the validator's staking key is split into *N* pieces and each of the co-validators holds a share. When at least *M* of the co-validators reach consensus on how to vote, they each sign the message with their share and a combined signature can be reconstructed from the shares. (this is known as *(M,N)-* threshold signatures).
+- **consensus**: the responsibilities of a single validator are split among several co-validators, who must work together to reach agreement on how to vote before signing any message.
+- ***M-of-N* threshold signatures**: the validator's staking key is split into *N* pieces and each of the co-validators holds a share. When at least *M* of the co-validators reach consensus on how to vote, they each sign the message with their share and a combined signature can be reconstructed from the shares.
 
-Ethereum proof-of-stake uses the BLS signature scheme, in which the private keys can be *(M,N)-* secret-shared to implement *(M,N)-* threshold signatures.
+Ethereum proof-of-stake uses the BLS signature scheme, in which the private keys can be *M-of-N* secret-shared to implement *M-of-N* threshold signatures.
 
 **Note**: Refer to the [glossary](glossary.md) for an explanation of new terms introduced in the Distributed Validator specifications.
 
-By combining a (safety-favouring) consensus algorithm with a threshold signature scheme, the DV protocol ensures that agreement is backed up by cryptography and at least *M* co-validators agree about any decision.
+By combining a suitable (safety-favouring) consensus algorithm with an *M-of-N* threshold signature scheme, the DV protocol ensures that agreement is backed up by cryptography and at least *M* co-validators agree about any decision.
 
 ### Resources
 
@@ -45,7 +45,16 @@ The following are existing implementations of DIstributed Validator technology (
 
 ![General Architecture](figures/general-architecture.png)
 
-This specification presents a way to implement Distributed Validator Client software as middleware between the Beacon Node (BN) and Validator Client (VC). That is to say that the connected BN thinks it is talking to a "normal" VC and the VC acts as though it is connected to a "normal" BN where as in reality, all communication is being intercepted by the DV in order for it to provide all the additional functionality.
+This specification presents a way to implement Distributed Validator Client software as middleware between the Beacon Node (BN) and Validator Client (VC):
+- all communication between the BN and VC is intercepted by the DVC in order for it to provide the additional DV functionality.
+- the BN & VC are unaware of the presence of the DVC, i.e., they think they are connected to each other as usual.
+
+### Assumptions
+- We assume *N* total nodes and an *M-of-N* threshold signature scheme.
+    - For general compatibility with BFT consensus protocols, we assume that `M = (2 * N / 3) + 1`.
+- This specification assumes [some leader-based safety-favoring consensus protocol](src/dvspec/consensus.py) for the Co-Validators to decide on signing upon the same attestation/block. We assume that the consensus protocol runs successfully with *M* correct nodes out of *N* total nodes.
+- We assume the usual prerequisites for safe operation of the Validator Client, such as an up-to-date anti-slashing database, correct system clock, etc.
+- We disregard the voting on the "correct" Ethereum fork for now - this functionality will be added in a future update.
 
 ### Desired Guarantees
 - **Safety (against key theft)**:
@@ -54,11 +63,6 @@ This specification presents a way to implement Distributed Validator Client soft
     - Under the assumption of an asynchronous network, the Validator is never slashed unless more than 2/3rd of the Co-Validators are Byzantine.
     - Under the assumption of a synchronous network, the Validator is never slashed unless more than 1/3rd of the Co-Validators are Byzantine.
 - **Liveness**: The protocol will eventually produce a new attestation/block under partially synchronous network unless more than 1/3rd of the Co-Validators are Byzantine.
-
-### Assumptions
-- This specification assumes [some leader-based safety-favoring consensus protocol](src/dvspec/consensus.py) for the Co-Validators to decide on signing upon the same attestation/block.
-- We assume the prerequisites for safe operation of the Validator Client, such as an up-to-date anti-slashing database, correct system clock, etc.
-- We disregard the voting on the "correct" Ethereum fork for now - this functionality will be added in a future update.
 
 ## Spec
 
