@@ -3,13 +3,11 @@ from eth2spec.phase0.mainnet import (
     BeaconBlock,
 )
 from dvspec.utils.types import (
+    BLSSignature,
+    Bytes32,
     AttestationDuty,
     ProposerDuty,
     SlashingDB,
-)
-from dvspec.utils.helpers import (
-    is_slashable_attestation_data,
-    is_slashable_block,
 )
 from dvspec.consensus import (
     consensus_is_valid_attestation_data,
@@ -18,6 +16,7 @@ from dvspec.consensus import (
 
 from tests.helpers.eth_node_interface import (
     bn_produce_attestation_data,
+    bn_produce_block,
 )
 
 
@@ -35,16 +34,18 @@ def consensus_on_attestation(slashing_db: SlashingDB, attestation_duty: Attestat
     """
     # TODO: Use this method in tests instead of dvspec.consensus.consensus_on_attestation
     attestation_data = bn_produce_attestation_data(attestation_duty.slot, attestation_duty.committee_index)
-    assert consensus_is_valid_attestation_data(slashing_db, attestation_data)
+    assert consensus_is_valid_attestation_data(slashing_db, attestation_data, attestation_duty)
     return attestation_data
 
 
-def consensus_on_block(slashing_db: SlashingDB, proposer_duty: ProposerDuty) -> AttestationData:
+def consensus_on_block(slashing_db: SlashingDB, proposer_duty: ProposerDuty) -> BeaconBlock:
     """Consensus protocol between distributed validator nodes for block values.
     Returns the decided value.
     If this DV is the leader, it must use `bn_produce_block` for the proposed value.
     The consensus protocol must use `consensus_is_valid_block` to determine
     validity of the proposed block value.
     """
-    # TODO: Implement & use this method in tests instead of dvspec.consensus.consensus_on_block
-    pass
+    # TODO: Use this method in tests instead of dvspec.consensus.consensus_on_block
+    block = bn_produce_block(proposer_duty.slot, BLSSignature(0x00), Bytes32(0x00))
+    assert consensus_is_valid_block(slashing_db, block, proposer_duty)
+    return block

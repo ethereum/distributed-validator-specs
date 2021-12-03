@@ -18,7 +18,8 @@ Helpers for State
 """
 
 
-def build_distributed_validator(validator_identity: ValidatorIdentity, num_covalidators=4) -> DistributedValidator:
+def build_distributed_validator(validator_identity: ValidatorIdentity,
+                                num_covalidators: int = 4) -> DistributedValidator:
     co_validators = []
     for i in range(1, num_covalidators):
         co_validators.append(CoValidator(validator_identity=validator_identity, pubkey=BLSPubkey(0x00), index=i))
@@ -31,7 +32,7 @@ def build_distributed_validator(validator_identity: ValidatorIdentity, num_coval
     return distributed_validator
 
 
-def build_state(num_distributed_validators) -> State:
+def build_state(num_distributed_validators: int) -> State:
     distributed_validators = []
     for i in range(num_distributed_validators):
         validator_identity = ValidatorIdentity(pubkey=BLSPubkey(i), index=i)

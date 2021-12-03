@@ -17,7 +17,7 @@ from tests.helpers.eth_node_interface import (
 )
 
 
-def test_basic_attestation():
+def test_basic_attestation() -> None:
     state = build_state(5)
     time = get_current_time()
 

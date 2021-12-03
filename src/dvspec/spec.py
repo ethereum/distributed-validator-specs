@@ -115,7 +115,7 @@ def serve_attestation_duty(slashing_db: SlashingDB, attestation_duty: Attestatio
     attestation_data = consensus_on_attestation(slashing_db, attestation_duty)
     # Release lock on consensus_on_attestation here.
     # Add attestation to slashing DB
-    update_attestation_slashing_db(slashing_db, attestation_data, attestation_duty)
+    update_attestation_slashing_db(slashing_db, attestation_data, attestation_duty.pubkey)
     # Cache decided attestation data value to provide to VC
     cache_attestation_data_for_vc(attestation_data, attestation_duty)
 
@@ -137,7 +137,7 @@ def serve_proposer_duty(slashing_db: SlashingDB, proposer_duty: ProposerDuty) ->
     block = consensus_on_block(slashing_db, proposer_duty)
     # Release lock on consensus_on_block here.
     # Add block to slashing DB
-    update_block_slashing_db(slashing_db, block, proposer_duty)
+    update_block_slashing_db(slashing_db, block, proposer_duty.pubkey)
     # Cache decided block value to provide to VC
     cache_block_for_vc(block, proposer_duty)
 
