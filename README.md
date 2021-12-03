@@ -5,13 +5,16 @@ Distributed Validators allow for implementing an Ethereum validator using a set 
 ## Introduction
 
 ### Motivation
+
+#### Traditional Validator Client Setup
 Ethereum validators participate in the [proof-of-stake protocol](https://github.com/ethereum/consensus-specs) by signing messages (such as blocks or attestations) using their staking private key. The staking key is accessible only by the validator client software, which schedules the creation & signing of messages according to the duties assigned to the validator. Some risks involved in a traditional validator client setup are:
 - The staking private key resides in one location. If an adversary gains access to this key, it can create conflicting messages that result in slashing of the validator's deposit.
     - Stakers who do not operate their own validator need to hand over their staking private key to the operator. They must trust the operator for the security of their staking private key.
 - If the validator client software is unable to create timely messages to perform validator duties, the validator suffers an inactivity leak that reduces its balance.
     - This could happen due to causes such as software crashes, loss of network connection, hardware faults, etc.
 
-The Distributed Validator protocol presents a solution to mitigate the risks & concerns mentioned above. In addition, this protocol can be used to enable advanced staking setups such as decentralized staking pools.
+#### Distributed Validator Protocol
+The Distributed Validator protocol presents a solution to mitigate the risks & concerns associated with traditional, single Validator Client setups. In addition, this protocol can be used to enable advanced staking setups such as decentralized staking pools.
 
 ### Basic Concepts
 
