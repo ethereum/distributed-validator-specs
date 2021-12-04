@@ -1,9 +1,3 @@
-from pkgutil import iter_modules
-import importlib
-
-from eth2spec.phase0.mainnet import SLOTS_PER_EPOCH
-
-import dvspec
 from dvspec.spec import (
     serve_attestation_duty,
     serve_proposer_duty,
@@ -23,28 +17,15 @@ from tests.helpers.consensus import (
     consensus_on_block,
 )
 from tests.helpers.eth_node_interface import (
-    SLOTS_PER_EPOCH,
     bn_get_attestation_duties_for_epoch,
-    bn_produce_attestation_data,
-    bn_submit_attestation,
     bn_get_proposer_duties_for_epoch,
-    bn_produce_block,
     fill_attestation_duties_with_val_index,
     filter_and_fill_proposer_duties_with_val_index,
 )
+from tests.helpers.patch_dvspec import (
+    replace_method_in_dvspec,
+)
 
-# Replace unimplemented methods from dvspec by methods from the test module
-def replace_module_method(module, method_name_string, replacement_method) -> None:
-    try:
-        getattr(module, method_name_string)
-        setattr(module, method_name_string, replacement_method)
-    except AttributeError:
-        pass
-
-def replace_method_in_dvspec(method_name_string, replacement_method) -> None:
-    for dvspec_submodule_info in iter_modules(dvspec.__path__):
-        dvspec_submodule = importlib.import_module(dvspec.__name__ + '.' + dvspec_submodule_info.name)
-        replace_module_method(dvspec_submodule, method_name_string, replacement_method)
 
 replace_method_in_dvspec("consensus_on_attestation", consensus_on_attestation)
 replace_method_in_dvspec("consensus_on_block", consensus_on_block)
@@ -70,7 +51,6 @@ def test_basic_block() -> None:
     time = get_current_time()
 
     current_epoch = compute_epoch_at_time(time)
-    validator_indices = get_validator_indices(state)
     proposer_duties = bn_get_proposer_duties_for_epoch(current_epoch+1)
     filled_proposer_duties = filter_and_fill_proposer_duties_with_val_index(state, proposer_duties)
     while len(filled_proposer_duties) == 0:

@@ -94,7 +94,8 @@ def fill_attestation_duties_with_val_index(state: State,
     return attestation_duties
 
 
-def filter_and_fill_proposer_duties_with_val_index(state: State, proposer_duties: List[ProposerDuty]) -> List[ProposerDuty]:
+def filter_and_fill_proposer_duties_with_val_index(state: State,
+                                                   proposer_duties: List[ProposerDuty]) -> List[ProposerDuty]:
     filtered_proposer_duties = []
     val_index_to_pubkey = {}
     for dv in state.distributed_validators:
