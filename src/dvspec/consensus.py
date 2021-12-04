@@ -36,7 +36,6 @@ def consensus_on_attestation(slashing_db: SlashingDB, attestation_duty: Attestat
     The consensus protocol must use `consensus_is_valid_attestation_data` to determine
     validity of the proposed attestation value.
     """
-    print("This is the wrong consensus_on_attestation")
     pass
 
 
