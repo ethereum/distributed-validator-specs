@@ -64,18 +64,6 @@ This specification presents a way to implement Distributed Validator Client soft
     - Under the assumption of a synchronous network, the Validator is never slashed unless more than 1/3rd of the Co-Validators are Byzantine.
 - **Liveness**: The protocol will eventually produce a new attestation/block under partially synchronous network unless more than 1/3rd of the Co-Validators are Byzantine.
 
-## Spec
+## Specification
 
-The specifications are organized as follows:
-- The [distributed validator specification](src/dvspec/spec.py) defines the behavior of a Co-Validator regarding attestation & block production processes.
-- The [Ethereum node interface](src/dvspec/eth_node_interface.py) describes the interface to communicate with the associated Beacon Node & Validator Client.
-- The [consensus specification](src/dvspec/consensus.py) describes the basic structure for the consensus protocol used between Co-Validators.
-- The [networking specification](src/dvspec/networking.py) defines the required networking logic between Distributed Validator Clients.
-
-### Attestation Production Process
-
-![UML for Attestation Production Process](figures/dv-attestation-production-process.png)
-
-### Block Production Process
-
-![UML for Block Production Process](figures/dv-block-production-process.png)
+Technical details about the specification are described in [`src/dvspec/`](src/dvspec/).
