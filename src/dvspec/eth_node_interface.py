@@ -76,7 +76,7 @@ when:
 - VC asks for its attestation, block proposal, or sync  duties using the following methods:
     - https://ethereum.github.io/beacon-APIs/#/ValidatorRequiredApi/getAttesterDuties
     - https://ethereum.github.io/beacon-APIs/#/ValidatorRequiredApi/getProposerDuties
-    - mhttps://ethereum.github.io/beacon-APIs/#/ValidatorRequiredApi/getSyncCommitteeDuties
+    - https://ethereum.github.io/beacon-APIs/#/ValidatorRequiredApi/getSyncCommitteeDuties
 - VC asks for new attestation data, block, or sync duty using the following methods:
     - https://ethereum.github.io/beacon-APIs/#/ValidatorRequiredApi/produceAttestationData
     - https://ethereum.github.io/beacon-APIs/#/ValidatorRequiredApi/produceBlockV2
