@@ -33,7 +33,7 @@ By combining a suitable (safety-favouring) consensus algorithm with an *M-of-N* 
 
 #### Implementations
 
-The following are existing implementations of DIstributed Validator technology (but not necessarily implementations of this specification).
+The following are existing implementations of Distributed Validator technology (but not necessarily implementations of this specification).
 
 - [`python-ssv`](https://github.com/dankrad/python-ssv): A proof-of-concept implementation of the distributed validator protocol in Python that interacts with the [Prysm Ethereum client](https://github.com/prysmaticlabs/prysm).
 - [`ssv`](https://github.com/bloxapp/ssv): An implementation of the distributed validator protocol in Go that interacts with the [Prysm Ethereum client](https://github.com/prysmaticlabs/prysm).
