@@ -19,13 +19,13 @@ The Distributed Validator protocol presents a solution to mitigate the risks & c
 
 ### Basic Concepts
 
+**Note**: Refer to the [glossary](glossary.md) for an explanation of new terms introduced in the Distributed Validator specifications.
+
 The two fundamental concepts behind Distributed Validators are:
 - **consensus**: the responsibilities of a single validator are split among several co-validators, who must work together to reach agreement on how to vote before signing any message.
 - ***M-of-N* threshold signatures**: the validator's staking key is split into *N* pieces and each of the co-validators holds a share. When at least *M* of the co-validators reach consensus on how to vote, they each sign the message with their share and a combined signature can be reconstructed from the shares.
 
 Ethereum proof-of-stake uses the BLS signature scheme, in which the private keys can be *M-of-N* secret-shared to implement *M-of-N* threshold signatures.
-
-**Note**: Refer to the [glossary](glossary.md) for an explanation of new terms introduced in the Distributed Validator specifications.
 
 By combining a suitable (safety-favouring) consensus algorithm with an *M-of-N* threshold signature scheme, the DV protocol ensures that agreement is backed up by cryptography and at least *M* co-validators agree about any decision.
 
