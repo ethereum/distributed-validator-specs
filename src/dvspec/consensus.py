@@ -1,4 +1,4 @@
-from eth2spec.phase0.mainnet import (
+from eth2spec.phase0.altair import (
     AttestationData,
     BeaconBlock,
 )

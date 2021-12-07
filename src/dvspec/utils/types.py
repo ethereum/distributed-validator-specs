@@ -85,3 +85,26 @@ class ProposerDuty:
     pubkey: BLSPubkey
     validator_index: ValidatorIndex
     slot: Slot
+
+
+@dataclass
+class SyncCommitteeDuty:
+    pubkey: BLSPubkey
+    validator_index: ValidatorIndex
+    validator_sync_committee_indices: List[ValidatorIndex]
+
+
+@dataclass
+class SyncCommitteeContribution:
+    slot: Slot
+    beacon_block_root: Root
+    subcommittee_index: ValidatorIndex
+    aggregation_bits: bytes
+
+
+@dataclass
+class SyncCommitteeSignature:
+    slot: Slot
+    beacon_block_root: Root
+    validator_index: ValidatorIndex
+    signature: BLSSignature

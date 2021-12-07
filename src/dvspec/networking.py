@@ -1,6 +1,6 @@
 from typing import List
 
-from eth2spec.phase0.mainnet import Attestation, SignedBeaconBlock
+from eth2spec.phase0.altair import Attestation, SignedBeaconBlock
 
 """
 Networking Specification

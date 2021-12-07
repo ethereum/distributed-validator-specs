@@ -1,5 +1,5 @@
 from typing import List
-from eth2spec.phase0.mainnet import (
+from eth2spec.phase0.altair import (
     Attestation,
     AttestationData,
     BeaconBlock,
@@ -17,7 +17,11 @@ from .utils.types import (
     CommitteeIndex,
     Epoch,
     ProposerDuty,
+    Root,
     Slot,
+    SyncCommitteeContribution,
+    SyncCommitteeDuty,
+    SyncCommitteeSignature,
     ValidatorIndex,
 )
 
@@ -47,8 +51,8 @@ def bn_submit_attestation(attestation: Attestation) -> None:
     pass
 
 
-def bn_get_proposer_duties_for_epoch(epoch: Epoch) -> List[ProposerDuty]:
-    """Fetch proposer duties for all proposers in the epoch.
+def bn_get_proposer_duties_for_epoch(validator_indices: List[ValidatorIndex], epoch: Epoch) -> List[ProposerDuty]:
+    """Fetch proposer duties for the supplied validators in the epoch.
     Uses https://ethereum.github.io/beacon-APIs/#/ValidatorRequiredApi/getProposerDuties
     """
     pass
@@ -68,11 +72,34 @@ def bn_submit_block(block: SignedBeaconBlock) -> None:
     pass
 
 
+def bn_get_sync_committee_duties_for_epoch(validator_indices: List[ValidatorIndex],
+                                           epoch: Epoch) -> List[SyncCommitteeDuty]:
+    """Fetch sync committee duties for all validator indices in the epoch.
+    Uses https://ethereum.github.io/beacon-APIs/#/ValidatorRequiredApi/submitPoolSyncCommitteeSignatures
+    """
+    pass
+
+
+def bn_produce_sync_committee_contribution(slot: Slot,
+                                           subcommittee_index: ValidatorIndex,
+                                           beacon_block_root: Root) -> SyncCommitteeContribution:
+    """Produces the sync committee contribution for the given params from the BN.
+    Uses https://ethereum.github.io/beacon-APIs/#/ValidatorRequiredApi/produceSyncCommitteeContribution
+    """
+    pass
+
+
+def bn_submit_sync_committee_signatures(sync_committee_signatures: List[SyncCommitteeSignature]) -> None:
+    """Submit sync committee signatures to the BN for Ethereum p2p gossip.
+    Uses https://ethereum.github.io/beacon-APIs/#/ValidatorRequiredApi/submitPoolSyncCommitteeSignatures
+    """
+    pass
+
+
 # Validator Client Interface
 
 """
-The VC is connected to the BN through the DVC. The DVC pretends to be a proxy for the BN, except
-when:
+The VC is connected to the BN through the DVC. The DVC pretends to be a proxy for the BN, except when:
 - VC asks for its attestation, block proposal, or sync  duties using the following methods:
     - https://ethereum.github.io/beacon-APIs/#/ValidatorRequiredApi/getAttesterDuties
     - https://ethereum.github.io/beacon-APIs/#/ValidatorRequiredApi/getProposerDuties
@@ -110,7 +137,7 @@ def capture_threshold_signed_attestation(threshold_signed_attestation: Attestati
     broadcast_threshold_signed_attestation(threshold_signed_attestation)
 
 
-def capture_threhold_signed_block(threshold_signed_block: SignedBeaconBlock) -> None:
+def capture_threshold_signed_block(threshold_signed_block: SignedBeaconBlock) -> None:
     """Captures a threshold signed block provided by the VC and starts the recombination process to
     construct a complete signed block to submit to the BN. The VC submits the block using the following method:
     https://ethereum.github.io/beacon-APIs/#/ValidatorRequiredApi/publishBlock
