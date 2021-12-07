@@ -1,7 +1,7 @@
 from typing import (
     Iterator,
 )
-from eth2spec.phase0.mainnet import (
+from eth2spec.phase0.altair import (
     SLOTS_PER_EPOCH,
     config,
 )
