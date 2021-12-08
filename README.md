@@ -19,13 +19,13 @@ The Distributed Validator protocol presents a solution to mitigate the risks & c
 
 ### Basic Concepts
 
+**Note**: Refer to the [glossary](glossary.md) for an explanation of new terms introduced in the Distributed Validator specifications.
+
 The two fundamental concepts behind Distributed Validators are:
 - **consensus**: the responsibilities of a single validator are split among several co-validators, who must work together to reach agreement on how to vote before signing any message.
 - ***M-of-N* threshold signatures**: the validator's staking key is split into *N* pieces and each of the co-validators holds a share. When at least *M* of the co-validators reach consensus on how to vote, they each sign the message with their share and a combined signature can be reconstructed from the shares.
 
 Ethereum proof-of-stake uses the BLS signature scheme, in which the private keys can be *M-of-N* secret-shared to implement *M-of-N* threshold signatures.
-
-**Note**: Refer to the [glossary](glossary.md) for an explanation of new terms introduced in the Distributed Validator specifications.
 
 By combining a suitable (safety-favouring) consensus algorithm with an *M-of-N* threshold signature scheme, the DV protocol ensures that agreement is backed up by cryptography and at least *M* co-validators agree about any decision.
 
@@ -33,7 +33,7 @@ By combining a suitable (safety-favouring) consensus algorithm with an *M-of-N* 
 
 #### Implementations
 
-The following are existing implementations of DIstributed Validator technology (but not necessarily implementations of this specification).
+The following are existing implementations of Distributed Validator technology (but not necessarily implementations of this specification).
 
 - [`python-ssv`](https://github.com/dankrad/python-ssv): A proof-of-concept implementation of the distributed validator protocol in Python that interacts with the [Prysm Ethereum client](https://github.com/prysmaticlabs/prysm).
 - [`ssv`](https://github.com/bloxapp/ssv): An implementation of the distributed validator protocol in Go that interacts with the [Prysm Ethereum client](https://github.com/prysmaticlabs/prysm).
@@ -64,18 +64,6 @@ This specification presents a way to implement Distributed Validator Client soft
     - Under the assumption of a synchronous network, the Validator is never slashed unless more than 1/3rd of the Co-Validators are Byzantine.
 - **Liveness**: The protocol will eventually produce a new attestation/block under partially synchronous network unless more than 1/3rd of the Co-Validators are Byzantine.
 
-## Spec
+## Specification
 
-The specifications are organized as follows:
-- The [distributed validator specification](src/dvspec/spec.py) defines the behavior of a Co-Validator regarding attestation & block production processes.
-- The [Ethereum node interface](src/dvspec/eth_node_interface.py) describes the interface to communicate with the associated Beacon Node & Validator Client.
-- The [consensus specification](src/dvspec/consensus.py) describes the basic structure for the consensus protocol used between Co-Validators.
-- The [networking specification](src/dvspec/networking.py) defines the required networking logic between Distributed Validator Clients.
-
-### Attestation Production Process
-
-![UML for Attestation Production Process](figures/dv-attestation-production-process.png)
-
-### Block Production Process
-
-![UML for Block Production Process](figures/dv-block-production-process.png)
+Technical details about the specification are described in [`src/dvspec/`](src/dvspec/).
