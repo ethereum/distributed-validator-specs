@@ -1,4 +1,4 @@
-from eth2spec.phase0.mainnet import (
+from eth2spec.altair.mainnet import (
     AttestationData,
     BeaconBlock,
 )
@@ -7,6 +7,8 @@ from .utils.types import (
     AttestationDuty,
     ProposerDuty,
     SlashingDB,
+    SyncCommitteeDuty,
+    SyncCommitteeContribution,
 )
 from .utils.helpers import (
     is_slashable_attestation_data,
@@ -53,6 +55,24 @@ def consensus_on_block(slashing_db: SlashingDB, proposer_duty: ProposerDuty) -> 
     Returns the decided value.
     If this DV is the leader, it must use `bn_produce_block` for the proposed value.
     The consensus protocol must use `consensus_is_valid_block` to determine
+    validity of the proposed block value.
+    """
+    pass
+
+
+# TODO: Does sync committee contribution need slashing DB?
+def consensus_is_valid_sync_committee_contribution(sync_committee_contribution: SyncCommitteeContribution,
+                                                   sync_committee_duty: SyncCommitteeDuty) -> bool:
+    """Determines if the given sync committee contribution is valid for the sync committee duty.
+    """
+    pass
+
+
+def consensus_on_sync_committee_contribution(sync_committee_duty: SyncCommitteeDuty) -> SyncCommitteeContribution:
+    """Consensus protocol between distributed validator nodes for sync committee contribution values.
+    Returns the decided value.
+    If this DV is the leader, it must use `bn_produce_sync_committee_contribution` for the proposed value.
+    The consensus protocol must use `consensus_is_valid_sync_committee_contribution` to determine
     validity of the proposed block value.
     """
     pass

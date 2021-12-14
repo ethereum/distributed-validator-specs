@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import (
     List,
 )
-from eth2spec.phase0.mainnet import (
+from eth2spec.altair.mainnet import (
     AttestationData,
     BeaconBlock,
 )
@@ -15,20 +15,26 @@ from .utils.helpers import (
 from .eth_node_interface import (
     AttestationDuty,
     ProposerDuty,
+    SyncCommitteeDuty,
     bn_submit_attestation,
     bn_submit_block,
+    bn_submit_sync_committee_signature,
     cache_attestation_data_for_vc,
     cache_block_for_vc,
+    cache_sync_committee_contribution_for_vc,
 )
 from .consensus import (
     consensus_on_attestation,
     consensus_on_block,
+    consensus_on_sync_committee_contribution,
 )
 from .networking import (
     construct_signed_attestation,
     construct_signed_block,
+    construct_signed_sync_committee_signature,
     listen_for_threshold_signed_attestations,
-    listen_for_threshold_signed_blocks
+    listen_for_threshold_signed_blocks,
+    listen_for_threshold_signed_sync_committee_signatures,
 )
 from .utils.types import (
     BLSPubkey,
@@ -142,6 +148,22 @@ def serve_proposer_duty(slashing_db: SlashingDB, proposer_duty: ProposerDuty) ->
     cache_block_for_vc(block, proposer_duty)
 
 
+def serve_sync_committee_duty(slashing_db: SlashingDB, sync_committee_duty: SyncCommitteeDuty) -> None:
+    """"
+    Sync Committee Signature Production Process:
+    TODO: What is the sequence here - do you query for next epoch's duties?
+    """
+    # TODO: Is lock on consensus the best way to do this?
+    # Obtain lock on consensus_on_sync_committee_contribution here.
+    # Only a single consensus_on_sync_committee_contribution instance should be
+    # running at any given time
+    sync_committee_contribution = consensus_on_sync_committee_contribution(sync_committee_duty)
+    # Release lock on consensus_on_block here.
+    # TODO: Update slashing DB with sync committee contribution
+    # Cache decided sync committee contribution value to provide to VC
+    cache_sync_committee_contribution_for_vc(sync_committee_contribution, sync_committee_duty)
+
+
 def threshold_attestation_combination() -> None:
     """
     Threshold Attestation Combination Process:
@@ -174,3 +196,23 @@ def threshold_signed_block_combination() -> None:
     complete_signed_block = construct_signed_block(threshold_signed_blocks)
     # 3. Send to beacon node for gossip
     bn_submit_block(complete_signed_block)
+
+
+def threshold_signed_sync_committee_signature_combination() -> None:
+    """
+    Threshold Sync Committee Signature Combination Process:
+    1. Always keep listening for threshold signed sync committee signatures using
+        listen_for_threshold_signed_sync_committee_signatures.
+    2a. Whenever a set of threshold signed sync committee signatures are found in Step 1 that can be
+        combined to construct a complete signed sync committee signature, construct the sync committee
+        signature.
+    2b. Send the sync committee signature to the beacon node for Ethereum p2p gossip.
+    """
+    # 1. Always listen for threshold signed sync committee signatures from DV peers.
+    threshold_signed_sync_committee_signatures = listen_for_threshold_signed_sync_committee_signatures()
+    # 2. Reconstruct complete signed sync committee signature by combining threshold
+    #    signed sync committee signatures
+    complete_signed_sync_committee_signature = \
+        construct_signed_sync_committee_signature(threshold_signed_sync_committee_signatures)
+    # 3. Send to beacon node for gossip
+    bn_submit_sync_committee_signature(complete_signed_sync_committee_signature)

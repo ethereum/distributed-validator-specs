@@ -1,5 +1,5 @@
-import eth2spec.phase0.mainnet as eth2spec
-from eth2spec.phase0.mainnet import (
+import eth2spec.altair.mainnet as eth2spec
+from eth2spec.altair.mainnet import (
     AttestationData,
     BeaconBlock,
 )
