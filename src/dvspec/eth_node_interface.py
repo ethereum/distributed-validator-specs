@@ -1,5 +1,5 @@
 from typing import List
-from eth2spec.phase0.altair import (
+from eth2spec.altair.mainnet import (
     Attestation,
     AttestationData,
     BeaconBlock,
@@ -8,7 +8,8 @@ from eth2spec.phase0.altair import (
 
 from .networking import (
     broadcast_threshold_signed_attestation,
-    broadcast_threshold_signed_block
+    broadcast_threshold_signed_block,
+    broadcast_threshold_signed_sync_committee_signature,
 )
 from .utils.types import (
     AttestationDuty,
@@ -51,8 +52,8 @@ def bn_submit_attestation(attestation: Attestation) -> None:
     pass
 
 
-def bn_get_proposer_duties_for_epoch(validator_indices: List[ValidatorIndex], epoch: Epoch) -> List[ProposerDuty]:
-    """Fetch proposer duties for the supplied validators in the epoch.
+def bn_get_proposer_duties_for_epoch(epoch: Epoch) -> List[ProposerDuty]:
+    """Fetch proposer duties for all proposers in the epoch.
     Uses https://ethereum.github.io/beacon-APIs/#/ValidatorRequiredApi/getProposerDuties
     """
     pass
@@ -89,7 +90,7 @@ def bn_produce_sync_committee_contribution(slot: Slot,
     pass
 
 
-def bn_submit_sync_committee_signatures(sync_committee_signatures: List[SyncCommitteeSignature]) -> None:
+def bn_submit_sync_committee_signature(sync_committee_signature: SyncCommitteeSignature) -> None:
     """Submit sync committee signatures to the BN for Ethereum p2p gossip.
     Uses https://ethereum.github.io/beacon-APIs/#/ValidatorRequiredApi/submitPoolSyncCommitteeSignatures
     """
@@ -129,6 +130,14 @@ def cache_block_for_vc(block: BeaconBlock, proposer_duty: ProposerDuty) -> None:
     pass
 
 
+def cache_sync_committee_contribution_for_vc(sync_committee_contribution: SyncCommitteeContribution,
+                                             sync_committee_duty: SyncCommitteeDuty) -> None:
+    """Cache sync committee contribution to provide to VC when it seeks new data using the following method:
+    https://ethereum.github.io/beacon-APIs/#/ValidatorRequiredApi/produceSyncCommitteeContribution
+    """
+    pass
+
+
 def capture_threshold_signed_attestation(threshold_signed_attestation: Attestation) -> None:
     """Captures a threshold signed attestation provided by the VC and starts the recombination process to
     construct a complete signed attestation to submit to the BN. The VC submits the attestation using the
@@ -143,3 +152,12 @@ def capture_threshold_signed_block(threshold_signed_block: SignedBeaconBlock) ->
     https://ethereum.github.io/beacon-APIs/#/ValidatorRequiredApi/publishBlock
     """
     broadcast_threshold_signed_block(threshold_signed_block)
+
+
+def capture_threshold_signed_sync_committee_signature(
+        threshold_signed_sync_committee_signature: SyncCommitteeSignature) -> None:
+    """Captures a threshold signed block provided by the VC and starts the recombination process to
+    construct a complete signed block to submit to the BN. The VC submits the block using the following method:
+    https://ethereum.github.io/beacon-APIs/#/ValidatorRequiredApi/publishBlock
+    """
+    broadcast_threshold_signed_sync_committee_signature(threshold_signed_sync_committee_signature)

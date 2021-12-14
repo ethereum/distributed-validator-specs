@@ -1,5 +1,5 @@
 import random
-from eth2spec.phase0.altair import (
+from eth2spec.altair.mainnet import (
     MAX_COMMITTEES_PER_SLOT,
     SLOTS_PER_EPOCH,
     TARGET_COMMITTEE_SIZE,
