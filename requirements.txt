@@ -1,0 +1,9 @@
+# execution requirements
+eth2spec==1.1.2
+
+# dev requirements
+mypy
+flake8
+
+# test requirements
+pytest
