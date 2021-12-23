@@ -15,6 +15,8 @@ from .utils.helpers import (
     is_slashable_block,
 )
 
+from nagini_contracts.contracts import *
+
 
 """
 Consensus Specification
@@ -39,6 +41,7 @@ def consensus_on_attestation(slashing_db: SlashingDB, attestation_duty: Attestat
     The consensus protocol must use `consensus_is_valid_attestation_data` to determine
     validity of the proposed attestation value.
     """
+    Ensures(consensus_is_valid_attestation_data(slashing_db, Result(), attestation_duty));
     pass
 
 
@@ -57,6 +60,7 @@ def consensus_on_block(slashing_db: SlashingDB, proposer_duty: ProposerDuty) -> 
     The consensus protocol must use `consensus_is_valid_block` to determine
     validity of the proposed block value.
     """
+    Ensures(consensus_is_valid_block(slashing_db, Result(), proposer_duty));
     pass
 
 
@@ -75,4 +79,5 @@ def consensus_on_sync_committee_contribution(sync_committee_duty: SyncCommitteeD
     The consensus protocol must use `consensus_is_valid_sync_committee_contribution` to determine
     validity of the proposed block value.
     """
+    Ensures(consensus_is_valid_sync_committee_contribution(sync_committee_duty, Result()));
     pass

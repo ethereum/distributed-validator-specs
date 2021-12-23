@@ -4,6 +4,7 @@ eth2spec==1.1.2
 # dev requirements
 mypy
 flake8
+nagini
 
 # test requirements
 pytest
