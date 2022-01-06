@@ -28,6 +28,7 @@
 - **Distributed Validator Key**: A distributed validator key is one persistent BLS public key emulated by a group of distributed validator key shares completing threshold signing together.
 - **Distributed Validator Key Share**: A distributed validator key share is one BLS private key that is part of the collection of shares that together can sign on behalf of the group distributed validator key.
 - **Distributed Validator Key Generation Ceremony**: A distributed key generation ceremony where a number of parties can come together to trustlessly create a distributed validator key, its associated deposit and exit data, and each parties' distributed validator key share and DVC certificate.
+- **Distributed Validator Client Certificate**: A distributed validator client communicates across the internet to connect to its counterparty peers. However each DVC needs a means of authenticating its counterparties, and confirming they have the authorisation to act on behalf of a given key share. A DVC authenticates itself to its peers with an SECP256K1 key pair. Secondly, it proves it has the authorisation to act on behalf of a given key share by presenting a signed message from its key share, known as a DVC certificate.
 
 ## Example
 
