@@ -3,9 +3,9 @@
 ## Organization
 
 The specifications are organized as follows:
-- [`spec.py` - distributed validator specification](spec.py) defines the behavior of a Co-Validator regarding attestation & block production processes.
+- [`spec.py` - distributed validator specification](spec.py) defines the behavior of a distributed validator client regarding attestation & block production processes.
 - [`eth_node_interface.py` - Ethereum node interface](eth_node_interface.py) describes the interface to communicate with the associated Beacon Node (BN) & Validator Client (VC).
-- [`consensus.py` - consensus specification](consensus.py) describes the basic structure for the consensus protocol used between Co-Validators.
+- [`consensus.py` - consensus specification](consensus.py) describes the basic structure for the consensus protocol used between DVCs.
 - [`networking.py` - networking specification](networking.py) defines the required networking logic between Distributed Validator Clients.
 - [`utils/` - utilities](utils/) contain type definitions and misc. helper functions for the specification.
 
@@ -20,9 +20,9 @@ The basic operation of the DVC is as follows:
 1. Request duties from the BN at the start of every epoch
 2. Schedule serving of the received duties at the appropriate times
 3. Serve a duty when triggered by:
-    1. Forming consensus with other Co-Validators over the data to be signed
+    1. Forming consensus with other operators over the data to be signed
     2. Caching the decided data to provide to the VC's request for data to be signed for this duty, and responding to the VC's request using the cached data
-    3. Capturing the threshold signed data from the VC's response and broadcasting it to other Co-Validators
+    3. Capturing the threshold signed data from the VC's response and broadcasting it to other Distributed Validator Client peers
     4. Re-combination of threshold signed data after receiving enough threshold signed data shares
 
 ### Anti-Slashing Measures at the DVC
