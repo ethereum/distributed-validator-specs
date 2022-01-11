@@ -24,6 +24,9 @@ from .eth_node_interface import (
     cache_sync_committee_contribution_for_vc,
 )
 from .consensus import (
+    consensus_is_valid_attestation_data,
+    consensus_is_valid_block,
+    consensus_is_valid_sync_committee_contribution,
     consensus_on_attestation,
     consensus_on_block,
     consensus_on_sync_committee_contribution,
@@ -119,6 +122,7 @@ def serve_attestation_duty(slashing_db: SlashingDB, attestation_duty: Attestatio
     # Only a single consensus_on_attestation instance should be
     # running at any given time
     attestation_data = consensus_on_attestation(slashing_db, attestation_duty)
+    assert consensus_is_valid_attestation_data(slashing_db, attestation_data, attestation_duty)
     # Release lock on consensus_on_attestation here.
     # Add attestation to slashing DB
     update_attestation_slashing_db(slashing_db, attestation_data, attestation_duty.pubkey)
@@ -141,6 +145,7 @@ def serve_proposer_duty(slashing_db: SlashingDB, proposer_duty: ProposerDuty) ->
     # Only a single consensus_on_block instance should be
     # running at any given time
     block = consensus_on_block(slashing_db, proposer_duty)
+    assert consensus_is_valid_block(slashing_db, block, proposer_duty)
     # Release lock on consensus_on_block here.
     # Add block to slashing DB
     update_block_slashing_db(slashing_db, block, proposer_duty.pubkey)
@@ -158,6 +163,7 @@ def serve_sync_committee_duty(slashing_db: SlashingDB, sync_committee_duty: Sync
     # Only a single consensus_on_sync_committee_contribution instance should be
     # running at any given time
     sync_committee_contribution = consensus_on_sync_committee_contribution(sync_committee_duty)
+    assert consensus_is_valid_sync_committee_contribution(sync_committee_contribution, sync_committee_duty)
     # Release lock on consensus_on_block here.
     # TODO: Update slashing DB with sync committee contribution
     # Cache decided sync committee contribution value to provide to VC
