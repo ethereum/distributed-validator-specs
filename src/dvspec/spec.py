@@ -4,10 +4,20 @@ from typing import (
 )
 from eth2spec.altair.mainnet import (
     AttestationData,
+    Attestation,
     BeaconBlock,
+    SignedBeaconBlock,
+    compute_start_slot_at_epoch,
+    compute_epoch_at_slot,
 )
 
-from .utils.helpers import (
+from dvspec.utils.helpers.signing import (
+    compute_attestation_signing_root,
+    compute_block_signing_root,
+    compute_randao_reveal_signing_root,
+)
+
+from .utils.helpers.slashing_db import (
     get_slashing_db_data_for_pubkey,
     is_slashable_attestation_data,
     is_slashable_block,
@@ -16,11 +26,13 @@ from .eth_node_interface import (
     AttestationDuty,
     ProposerDuty,
     SyncCommitteeDuty,
+    bn_get_fork_version,
     bn_submit_attestation,
     bn_submit_block,
     bn_submit_sync_committee_signature,
-    cache_attestation_data_for_vc,
-    cache_block_for_vc,
+    rs_sign_attestation,
+    rs_sign_randao_reveal,
+    rs_sign_block,
     cache_sync_committee_contribution_for_vc,
 )
 from .consensus import (
@@ -29,6 +41,8 @@ from .consensus import (
     consensus_on_sync_committee_contribution,
 )
 from .networking import (
+    broadcast_threshold_signed_attestation,
+    broadcast_threshold_signed_block,
     construct_signed_attestation,
     construct_signed_block,
     construct_signed_sync_committee_signature,
@@ -122,8 +136,15 @@ def serve_attestation_duty(slashing_db: SlashingDB, attestation_duty: Attestatio
     # Release lock on consensus_on_attestation here.
     # Add attestation to slashing DB
     update_attestation_slashing_db(slashing_db, attestation_data, attestation_duty.pubkey)
-    # Cache decided attestation data value to provide to VC
-    cache_attestation_data_for_vc(attestation_data, attestation_duty)
+    # Sign attestation using RS
+    # TODO: Reuse fork version from here in compute_domain
+    fork_version = bn_get_fork_version(compute_start_slot_at_epoch(attestation_data.target.epoch))
+    attestation_signing_root = compute_attestation_signing_root(attestation_data)
+    attestation_threshold_signature = rs_sign_attestation(attestation_data, attestation_signing_root, fork_version)
+    # TODO: What is threshold_signed_attestation.aggregation_bits?
+    threshold_signed_attestation = Attestation(data=attestation_data, signature=attestation_threshold_signature)
+    # TODO: Should we just gossip & recombine the threshold signatures without attestation data?
+    broadcast_threshold_signed_attestation(threshold_signed_attestation)
 
 
 def serve_proposer_duty(slashing_db: SlashingDB, proposer_duty: ProposerDuty) -> None:
@@ -140,28 +161,35 @@ def serve_proposer_duty(slashing_db: SlashingDB, proposer_duty: ProposerDuty) ->
     # Obtain lock on consensus_on_block here.
     # Only a single consensus_on_block instance should be
     # running at any given time
-    block = consensus_on_block(slashing_db, proposer_duty)
+    fork_version = bn_get_fork_version(proposer_duty.slot)
+    # Sign randao_reveal using RS
+    randao_reveal_signing_root = compute_randao_reveal_signing_root(proposer_duty.slot)
+    randao_reveal = rs_sign_randao_reveal(compute_epoch_at_slot(proposer_duty.slot), fork_version, randao_reveal_signing_root)
+    block = consensus_on_block(slashing_db, proposer_duty, randao_reveal)
     # Release lock on consensus_on_block here.
     # Add block to slashing DB
     update_block_slashing_db(slashing_db, block, proposer_duty.pubkey)
-    # Cache decided block value to provide to VC
-    cache_block_for_vc(block, proposer_duty)
+    # Sign block using RS
+    block_signing_root = compute_block_signing_root(block)
+    block_threshold_signature = rs_sign_block(block, fork_version, block_signing_root)
+    threshold_signed_block = SignedBeaconBlock(message=BeaconBlock, signature=block_threshold_signature)
+    broadcast_threshold_signed_block(threshold_signed_block)
 
 
-def serve_sync_committee_duty(slashing_db: SlashingDB, sync_committee_duty: SyncCommitteeDuty) -> None:
-    """"
-    Sync Committee Signature Production Process:
-    TODO: What is the sequence here - do you query for next epoch's duties?
-    """
-    # TODO: Is lock on consensus the best way to do this?
-    # Obtain lock on consensus_on_sync_committee_contribution here.
-    # Only a single consensus_on_sync_committee_contribution instance should be
-    # running at any given time
-    sync_committee_contribution = consensus_on_sync_committee_contribution(sync_committee_duty)
-    # Release lock on consensus_on_block here.
-    # TODO: Update slashing DB with sync committee contribution
-    # Cache decided sync committee contribution value to provide to VC
-    cache_sync_committee_contribution_for_vc(sync_committee_contribution, sync_committee_duty)
+# def serve_sync_committee_duty(slashing_db: SlashingDB, sync_committee_duty: SyncCommitteeDuty) -> None:
+#     """"
+#     Sync Committee Signature Production Process:
+#     TODO: What is the sequence here - do you query for next epoch's duties?
+#     """
+#     # TODO: Is lock on consensus the best way to do this?
+#     # Obtain lock on consensus_on_sync_committee_contribution here.
+#     # Only a single consensus_on_sync_committee_contribution instance should be
+#     # running at any given time
+#     sync_committee_contribution = consensus_on_sync_committee_contribution(sync_committee_duty)
+#     # Release lock on consensus_on_block here.
+#     # TODO: Update slashing DB with sync committee contribution
+#     # Cache decided sync committee contribution value to provide to VC
+#     cache_sync_committee_contribution_for_vc(sync_committee_contribution, sync_committee_duty)
 
 
 def threshold_attestation_combination() -> None:
@@ -198,21 +226,21 @@ def threshold_signed_block_combination() -> None:
     bn_submit_block(complete_signed_block)
 
 
-def threshold_signed_sync_committee_signature_combination() -> None:
-    """
-    Threshold Sync Committee Signature Combination Process:
-    1. Always keep listening for threshold signed sync committee signatures using
-        listen_for_threshold_signed_sync_committee_signatures.
-    2a. Whenever a set of threshold signed sync committee signatures are found in Step 1 that can be
-        combined to construct a complete signed sync committee signature, construct the sync committee
-        signature.
-    2b. Send the sync committee signature to the beacon node for Ethereum p2p gossip.
-    """
-    # 1. Always listen for threshold signed sync committee signatures from DV peers.
-    threshold_signed_sync_committee_signatures = listen_for_threshold_signed_sync_committee_signatures()
-    # 2. Reconstruct complete signed sync committee signature by combining threshold
-    #    signed sync committee signatures
-    complete_signed_sync_committee_signature = \
-        construct_signed_sync_committee_signature(threshold_signed_sync_committee_signatures)
-    # 3. Send to beacon node for gossip
-    bn_submit_sync_committee_signature(complete_signed_sync_committee_signature)
+# def threshold_signed_sync_committee_signature_combination() -> None:
+#     """
+#     Threshold Sync Committee Signature Combination Process:
+#     1. Always keep listening for threshold signed sync committee signatures using
+#         listen_for_threshold_signed_sync_committee_signatures.
+#     2a. Whenever a set of threshold signed sync committee signatures are found in Step 1 that can be
+#         combined to construct a complete signed sync committee signature, construct the sync committee
+#         signature.
+#     2b. Send the sync committee signature to the beacon node for Ethereum p2p gossip.
+#     """
+#     # 1. Always listen for threshold signed sync committee signatures from DV peers.
+#     threshold_signed_sync_committee_signatures = listen_for_threshold_signed_sync_committee_signatures()
+#     # 2. Reconstruct complete signed sync committee signature by combining threshold
+#     #    signed sync committee signatures
+#     complete_signed_sync_committee_signature = \
+#         construct_signed_sync_committee_signature(threshold_signed_sync_committee_signatures)
+#     # 3. Send to beacon node for gossip
+#     bn_submit_sync_committee_signature(complete_signed_sync_committee_signature)

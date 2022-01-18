@@ -4,6 +4,7 @@ from eth2spec.altair.mainnet import (
     AttestationData,
     BeaconBlock,
     SignedBeaconBlock,
+    Version,
 )
 
 from .networking import (
@@ -28,6 +29,21 @@ from .utils.types import (
 
 
 # Beacon Node Interface
+
+
+def bn_get_genesis_validators_root() -> Root:
+    """Fetch genesis validators root for the current chain.
+    Uses https://ethereum.github.io/beacon-APIs/#/Beacon/getGenesis
+    """
+    pass
+
+
+def bn_get_fork_version(slot: Slot) -> Version:
+    """Fetch fork version for the given slot in the current chain.
+    Uses https://ethereum.github.io/beacon-APIs/#/Beacon/getStateFork
+    """
+    pass
+
 
 def bn_get_attestation_duties_for_epoch(validator_indices: List[ValidatorIndex], epoch: Epoch) -> List[AttestationDuty]:
     # TODO: Define typing here:
@@ -97,67 +113,37 @@ def bn_submit_sync_committee_signature(sync_committee_signature: SyncCommitteeSi
     pass
 
 
-# Validator Client Interface
+# Remote Signer Interface
 
 """
-The VC is connected to the BN through the DVC. The DVC pretends to be a proxy for the BN, except when:
-- VC asks for its attestation, block proposal, or sync  duties using the following methods:
-    - https://ethereum.github.io/beacon-APIs/#/ValidatorRequiredApi/getAttesterDuties
-    - https://ethereum.github.io/beacon-APIs/#/ValidatorRequiredApi/getProposerDuties
-    - https://ethereum.github.io/beacon-APIs/#/ValidatorRequiredApi/getSyncCommitteeDuties
-- VC asks for new attestation data, block, or sync duty using the following methods:
-    - https://ethereum.github.io/beacon-APIs/#/ValidatorRequiredApi/produceAttestationData
-    - https://ethereum.github.io/beacon-APIs/#/ValidatorRequiredApi/produceBlockV2
-    - https://ethereum.github.io/beacon-APIs/#/ValidatorRequiredApi/produceSyncCommitteeContribution
-- VC submits new threshold signed attestation, block proposal, or sync duty using the following methods:
-    - https://ethereum.github.io/beacon-APIs/#/Beacon/submitPoolAttestations
-    - https://ethereum.github.io/beacon-APIs/#/ValidatorRequiredApi/publishBlock
-    - https://ethereum.github.io/beacon-APIs/#/ValidatorRequiredApi/produceSyncCommitteeContribution
+Remote Signer API: https://consensys.github.io/web3signer/web3signer-eth2.html
 """
 
-
-def cache_attestation_data_for_vc(attestation_data: AttestationData, attestation_duty: AttestationDuty) -> None:
-    """Cache attestation data to provide to VC when it seeks new attestation data using the following method:
-    https://ethereum.github.io/beacon-APIs/#/ValidatorRequiredApi/produceAttestationData
+def rs_sign_attestation(attestation_data: AttestationData, fork_version: Version, signing_root: Root) -> BLSSignature:
+    """Instruct RS to sign attestation data using method:
+    /api/v1/eth2/sign/attestation
     """
     pass
 
 
-def cache_block_for_vc(block: BeaconBlock, proposer_duty: ProposerDuty) -> None:
-    """Cache block to provide to VC when it seeks a new block using the following method:
-    https://ethereum.github.io/beacon-APIs/#/ValidatorRequiredApi/produceAttestationData
+def rs_sign_randao_reveal(epoch: Epoch, fork_version: Version, signing_root: Root) -> BLSSignature:
+    """Instruct RS to sign block using method:
+    /api/v1/eth2/sign/randao_reveal
     """
     pass
 
 
-def cache_sync_committee_contribution_for_vc(sync_committee_contribution: SyncCommitteeContribution,
-                                             sync_committee_duty: SyncCommitteeDuty) -> None:
-    """Cache sync committee contribution to provide to VC when it seeks new data using the following method:
-    https://ethereum.github.io/beacon-APIs/#/ValidatorRequiredApi/produceSyncCommitteeContribution
+def rs_sign_block(block: BeaconBlock, fork_version: Version, signing_root: Root) -> BLSSignature:
+    """Instruct RS to sign block using method:
+    /api/v1/eth2/sign/block_v2
     """
     pass
 
 
-def capture_threshold_signed_attestation(threshold_signed_attestation: Attestation) -> None:
-    """Captures a threshold signed attestation provided by the VC and starts the recombination process to
-    construct a complete signed attestation to submit to the BN. The VC submits the attestation using the
-    following method: https://ethereum.github.io/beacon-APIs/#/Beacon/submitPoolAttestations
-    """
-    broadcast_threshold_signed_attestation(threshold_signed_attestation)
-
-
-def capture_threshold_signed_block(threshold_signed_block: SignedBeaconBlock) -> None:
-    """Captures a threshold signed block provided by the VC and starts the recombination process to
-    construct a complete signed block to submit to the BN. The VC submits the block using the following method:
-    https://ethereum.github.io/beacon-APIs/#/ValidatorRequiredApi/publishBlock
-    """
-    broadcast_threshold_signed_block(threshold_signed_block)
-
-
-def capture_threshold_signed_sync_committee_signature(
-        threshold_signed_sync_committee_signature: SyncCommitteeSignature) -> None:
-    """Captures a threshold signed block provided by the VC and starts the recombination process to
-    construct a complete signed block to submit to the BN. The VC submits the block using the following method:
-    https://ethereum.github.io/beacon-APIs/#/ValidatorRequiredApi/publishBlock
-    """
-    broadcast_threshold_signed_sync_committee_signature(threshold_signed_sync_committee_signature)
+# TODO: Handle sync committee contributions correctly
+# def cache_sync_committee_contribution_for_vc(sync_committee_contribution: SyncCommitteeContribution,
+#                                              sync_committee_duty: SyncCommitteeDuty) -> None:
+#     """Cache sync committee contribution to provide to VC when it seeks new data using the following method:
+#     https://ethereum.github.io/beacon-APIs/#/ValidatorRequiredApi/produceSyncCommitteeContribution
+#     """
+#     pass
