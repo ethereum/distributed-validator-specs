@@ -25,7 +25,7 @@ The two fundamental concepts behind Distributed Validators are:
 - **consensus**: the responsibilities of a single validator are split among several co-validators, who must work together to reach agreement on how to vote before signing any message.
 - ***M-of-N* threshold signatures**: the validator's staking key is split into *N* pieces and each of the co-validators holds a share. When at least *M* of the co-validators reach consensus on how to vote, they each sign the message with their share and a combined signature can be reconstructed from the shares.
 
-Ethereum proof-of-stake uses the BLS signature scheme, in which the private keys can be *M-of-N* secret-shared to implement *M-of-N* threshold signatures.
+Ethereum proof-of-stake uses the BLS signature scheme, in which the private keys can be *M-of-N* secret-shared (using Shamir secret sharing) to implement *M-of-N* threshold signatures.
 
 By combining a suitable (safety-favouring) consensus algorithm with an *M-of-N* threshold signature scheme, the DV protocol ensures that agreement is backed up by cryptography and at least *M* co-validators agree about any decision.
 
@@ -60,8 +60,8 @@ This specification presents a way to implement Distributed Validator Client soft
 - **Safety (against key theft)**:
     - The Validator's staking private key is secure unless security is compromised at more than *M* of the *N* Co-Validators.
 - **Safety (against slashing)**: 
-    - Under the assumption of an asynchronous network, the Validator is never slashed unless more than 2/3rd of the Co-Validators are Byzantine.
-    - Under the assumption of a synchronous network, the Validator is never slashed unless more than 1/3rd of the Co-Validators are Byzantine.
+    - Under the assumption of an asynchronous network, the Validator is never slashed unless more than 1/3rd of the Co-Validators are Byzantine.
+    - Under the assumption of a synchronous network, the Validator is never slashed unless more than 2/3rds of the Co-Validators are Byzantine.
 - **Liveness**: The protocol will eventually produce a new attestation/block under partially synchronous network unless more than 1/3rd of the Co-Validators are Byzantine.
 
 ## Specification

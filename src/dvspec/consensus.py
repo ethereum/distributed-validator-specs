@@ -1,4 +1,3 @@
-from msilib.schema import Signature
 from eth2spec.altair.mainnet import (
     AttestationData,
     BeaconBlock,
@@ -27,10 +26,11 @@ def consensus_is_valid_attestation_data(slashing_db: SlashingDB,
                                         attestation_data: AttestationData, attestation_duty: AttestationDuty) -> bool:
     """Determines if the given attestation is valid for the attestation duty.
     """
-    assert attestation_data.slot == attestation_duty.slot
-    assert attestation_data.index == attestation_duty.committee_index
-    assert not is_slashable_attestation_data(slashing_db, attestation_data, attestation_duty.pubkey)
-    return True
+    return \
+        attestation_data.slot == attestation_duty.slot and \
+        attestation_data.index == attestation_duty.committee_index and \
+        not is_slashable_attestation_data(slashing_db, attestation_data, attestation_duty.pubkey)
+
 
 
 def consensus_on_attestation(slashing_db: SlashingDB, attestation_duty: AttestationDuty) -> AttestationData:
@@ -46,11 +46,10 @@ def consensus_on_attestation(slashing_db: SlashingDB, attestation_duty: Attestat
 def consensus_is_valid_block(slashing_db: SlashingDB, block: BeaconBlock, proposer_duty: ProposerDuty, randao_reveal: BLSSignature) -> bool:
     """Determines if the given block is valid for the proposer duty.
     """
-    assert block.slot == proposer_duty.slot
-    assert block.body.randao_reveal == randao_reveal
-    # TODO: Assert correct block.proposer_index
-    assert not is_slashable_block(slashing_db, block, proposer_duty.pubkey)
-    return True
+     # TODO: Add correct block.proposer_index check \ 
+    return block.slot == proposer_duty.slot and \
+           block.body.randao_reveal == randao_reveal and \
+           not is_slashable_block(slashing_db, block, proposer_duty.pubkey)
 
 
 def consensus_on_block(slashing_db: SlashingDB, proposer_duty: ProposerDuty, randao_reveal: BLSSignature) -> BeaconBlock:
