@@ -7,6 +7,7 @@ from eth2spec.altair.mainnet import (
     AttestationData,
     BeaconBlock,
     Checkpoint,
+    Version,
     compute_epoch_at_slot,
     compute_start_slot_at_epoch,
 )
@@ -20,6 +21,7 @@ from dvspec.utils.types import (
     Epoch,
     List,
     ProposerDuty,
+    Root,
     Slot,
     ValidatorIndex,
 )
@@ -34,12 +36,16 @@ Ethereum node interface methods
 """
 
 
+def bn_get_fork_version(slot: Slot) -> Version:
+    return Version('0x00000000')
+
+
 def bn_get_attestation_duties_for_epoch(validator_indices: List[ValidatorIndex], epoch: Epoch) -> List[AttestationDuty]:
     attestation_duties = []
     for validator_index in validator_indices:
         start_slot_at_epoch = compute_start_slot_at_epoch(epoch)
         attestation_slot = start_slot_at_epoch + random.randrange(SLOTS_PER_EPOCH)
-        attestation_duty = AttestationDuty(pubkey=BLSPubkey(0x00),
+        attestation_duty = AttestationDuty(pubkey=BLSPubkey(str(validator_index).zfill(48*2)),
                                            validator_index=validator_index,
                                            committee_index=random.randrange(MAX_COMMITTEES_PER_SLOT),
                                            committee_length=TARGET_COMMITTEE_SIZE,
@@ -67,7 +73,8 @@ def bn_get_proposer_duties_for_epoch(epoch: Epoch) -> List[ProposerDuty]:
     validator_indices = [x for x in range(VALIDATOR_SET_SIZE)]
     random.shuffle(validator_indices)
     for i in range(SLOTS_PER_EPOCH):
-        proposer_duties.append(ProposerDuty(pubkey=BLSPubkey(0x00), validator_index=validator_indices[i], slot=i))
+        proposer_duties.append(ProposerDuty(pubkey=BLSPubkey(str('').zfill(48*2)),
+                               validator_index=validator_indices[i], slot=i))
     return proposer_duties
 
 
@@ -77,6 +84,18 @@ def bn_produce_block(slot: Slot, randao_reveal: BLSSignature, graffiti: Bytes32)
     block.body.randao_reveal = randao_reveal
     block.body.graffiti = graffiti
     return block
+
+
+def rs_sign_attestation(attestation_data: AttestationData, fork_version: Version, signing_root: Root) -> BLSSignature:
+    return BLSSignature(str(signing_root.hex()).zfill(96*2))
+
+
+def rs_sign_randao_reveal(epoch: Epoch, fork_version: Version, signing_root: Root) -> BLSSignature:
+    return BLSSignature(str(signing_root.hex()).zfill(96*2))
+
+
+def rs_sign_block(block: BeaconBlock, fork_version: Version, signing_root: Root) -> BLSSignature:
+    return BLSSignature(str(signing_root.hex()).zfill(96*2))
 
 
 """

@@ -25,7 +25,6 @@ from .utils.helpers.slashing_db import (
 from .eth_node_interface import (
     AttestationDuty,
     ProposerDuty,
-    SyncCommitteeDuty,
     bn_get_fork_version,
     bn_submit_attestation,
     bn_submit_block,
@@ -33,7 +32,6 @@ from .eth_node_interface import (
     rs_sign_attestation,
     rs_sign_randao_reveal,
     rs_sign_block,
-    cache_sync_committee_contribution_for_vc,
 )
 from .consensus import (
     consensus_is_valid_attestation_data,
@@ -168,16 +166,17 @@ def serve_proposer_duty(slashing_db: SlashingDB, proposer_duty: ProposerDuty) ->
     fork_version = bn_get_fork_version(proposer_duty.slot)
     # Sign randao_reveal using RS
     randao_reveal_signing_root = compute_randao_reveal_signing_root(proposer_duty.slot)
-    randao_reveal = rs_sign_randao_reveal(compute_epoch_at_slot(proposer_duty.slot), fork_version, randao_reveal_signing_root)
+    randao_reveal = rs_sign_randao_reveal(compute_epoch_at_slot(proposer_duty.slot),
+                                          fork_version, randao_reveal_signing_root)
     block = consensus_on_block(slashing_db, proposer_duty, randao_reveal)
-    assert consensus_is_valid_block(slashing_db, block, proposer_duty randao_reveal)
+    assert consensus_is_valid_block(slashing_db, block, proposer_duty, randao_reveal)
     # Release lock on consensus_on_block here.
     # Add block to slashing DB
     update_block_slashing_db(slashing_db, block, proposer_duty.pubkey)
     # Sign block using RS
     block_signing_root = compute_block_signing_root(block)
     block_threshold_signature = rs_sign_block(block, fork_version, block_signing_root)
-    threshold_signed_block = SignedBeaconBlock(message=BeaconBlock, signature=block_threshold_signature)
+    threshold_signed_block = SignedBeaconBlock(message=block, signature=block_threshold_signature)
     broadcast_threshold_signed_block(threshold_signed_block)
 
 
@@ -197,28 +196,10 @@ def serve_proposer_duty(slashing_db: SlashingDB, proposer_duty: ProposerDuty) ->
 #     cache_sync_committee_contribution_for_vc(sync_committee_contribution, sync_committee_duty)
 
 
-def serve_sync_committee_duty(slashing_db: SlashingDB, sync_committee_duty: SyncCommitteeDuty) -> None:
-    """"
-    Sync Committee Signature Production Process:
-    TODO: What is the sequence here - do you query for next epoch's duties?
-    """
-    # TODO: Is lock on consensus the best way to do this?
-    # Obtain lock on consensus_on_sync_committee_contribution here.
-    # Only a single consensus_on_sync_committee_contribution instance should be
-    # running at any given time
-    sync_committee_contribution = consensus_on_sync_committee_contribution(sync_committee_duty)
-    assert consensus_is_valid_sync_committee_contribution(sync_committee_contribution, sync_committee_duty)
-    # Release lock on consensus_on_block here.
-    # TODO: Update slashing DB with sync committee contribution
-    # Cache decided sync committee contribution value to provide to VC
-    cache_sync_committee_contribution_for_vc(sync_committee_contribution, sync_committee_duty)
-
-
 def threshold_attestation_combination() -> None:
     """
     Threshold Attestation Combination Process:
-    1. Always keep listening for threshold signed attestations using
-        broadcast_threshold_signed_attestation.
+    1. Always keep listening for threshold signed attestations from other DVCs.
     2a. Whenever a set of threshold signed attestations are found in Step 1 that can be
         combined to construct a complete signed attestation, construct the attestation.
     2b. Send the attestation to the beacon node for Ethereum p2p gossip.
@@ -234,8 +215,7 @@ def threshold_attestation_combination() -> None:
 def threshold_signed_block_combination() -> None:
     """
     Threshold Block Combination Process:
-    1. Always keep listening for threshold signed blocks using
-        listen_for_threshold_signed_block.
+    1. Always keep listening for threshold signed blocks using from other DVCs.
     2a. Whenever a set of threshold signed blocks are found in Step 1 that can be
         combined to construct a complete signed block, construct the block.
     2b. Send the block to the beacon node for Ethereum p2p gossip.

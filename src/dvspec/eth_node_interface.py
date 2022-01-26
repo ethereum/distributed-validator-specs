@@ -7,11 +7,6 @@ from eth2spec.altair.mainnet import (
     Version,
 )
 
-from .networking import (
-    broadcast_threshold_signed_attestation,
-    broadcast_threshold_signed_block,
-    broadcast_threshold_signed_sync_committee_signature,
-)
 from .utils.types import (
     AttestationDuty,
     BLSSignature,
@@ -119,6 +114,7 @@ def bn_submit_sync_committee_signature(sync_committee_signature: SyncCommitteeSi
 Remote Signer API: https://consensys.github.io/web3signer/web3signer-eth2.html
 """
 
+
 def rs_sign_attestation(attestation_data: AttestationData, fork_version: Version, signing_root: Root) -> BLSSignature:
     """Instruct RS to sign attestation data using method:
     /api/v1/eth2/sign/attestation
@@ -138,12 +134,3 @@ def rs_sign_block(block: BeaconBlock, fork_version: Version, signing_root: Root)
     /api/v1/eth2/sign/block_v2
     """
     pass
-
-
-# TODO: Handle sync committee contributions correctly
-# def cache_sync_committee_contribution_for_vc(sync_committee_contribution: SyncCommitteeContribution,
-#                                              sync_committee_duty: SyncCommitteeDuty) -> None:
-#     """Cache sync committee contribution to provide to VC when it seeks new data using the following method:
-#     https://ethereum.github.io/beacon-APIs/#/ValidatorRequiredApi/produceSyncCommitteeContribution
-#     """
-#     pass
