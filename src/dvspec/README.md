@@ -16,7 +16,6 @@ The BN & RS communicate over HTTP in accordance with the [Ethereum Beacon Node A
 
 The interaction between the DVC and RS is driven by the DVC. The RS hosts a server that allows incoming requests for signing Ethereum messages. The DVC instructs the RS to sign appropriate messages to serve the Validator's assigned duties.
 
-<!-- The [interaction between the BN & VC](https://github.com/ethereum/beacon-APIs/blob/master/validator-flow.md) is driven by the VC, i.e., the VC starts the interaction by making the appropriate request at the BN's HTTP server. In this way, the VC never accepts incoming requests and does not host a server. The lack of a server prevents the DVC from instructing the VC to sign data whenever consensus is formed for a duty's data. The DVC instead caches the decided data for the duty, and responds to the VC's request for the duty's data using the cached value. If the DVC has not formed consensus over a duty's data when the VC makes a request for that duty's data, the HTTP request is "hung" until consensus is formed. This can be supported by the VC with appropriate parameter changes in the HTTP request it makes, without any implementation changes. -->
 
 The basic operation of the DVC is as follows:
 1. Request duties from the BN at the start of every epoch
