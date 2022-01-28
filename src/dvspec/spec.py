@@ -29,7 +29,6 @@ from .eth_node_interface import (
     bn_get_fork_version,
     bn_submit_attestation,
     bn_submit_block,
-    bn_submit_sync_committee_signature,
     rs_sign_attestation,
     rs_sign_randao_reveal,
     rs_sign_block,
@@ -37,10 +36,8 @@ from .eth_node_interface import (
 from .consensus import (
     consensus_is_valid_attestation_data,
     consensus_is_valid_block,
-    consensus_is_valid_sync_committee_contribution,
     consensus_on_attestation,
     consensus_on_block,
-    consensus_on_sync_committee_contribution,
 )
 from .networking import (
     broadcast_attestation_signature_share,
@@ -49,11 +46,9 @@ from .networking import (
     construct_signed_attestation,
     construct_signed_randao_reveal,
     construct_signed_block,
-    construct_signed_sync_committee_signature,
     listen_for_attestation_signature_shares,
     listen_for_block_signature_shares,
     listen_for_randao_reveal_signature_shares,
-    listen_for_sync_committee_signatures_signature_shares,
 )
 from .utils.types import (
     BLSPubkey,
@@ -187,22 +182,6 @@ def serve_proposer_duty(slashing_db: SlashingDB, proposer_duty: ProposerDuty) ->
     broadcast_block_signature_share(block_signature_share)
 
 
-# def serve_sync_committee_duty(slashing_db: SlashingDB, sync_committee_duty: SyncCommitteeDuty) -> None:
-#     """"
-#     Sync Committee Signature Production Process:
-#     TODO: What is the sequence here - do you query for next epoch's duties?
-#     """
-#     # TODO: Is lock on consensus the best way to do this?
-#     # Obtain lock on consensus_on_sync_committee_contribution here.
-#     # Only a single consensus_on_sync_committee_contribution instance should be
-#     # running at any given time
-#     sync_committee_contribution = consensus_on_sync_committee_contribution(sync_committee_duty)
-#     # Release lock on consensus_on_block here.
-#     # TODO: Update slashing DB with sync committee contribution
-#     # Cache decided sync committee contribution value to provide to VC
-#     cache_sync_committee_contribution_for_vc(sync_committee_contribution, sync_committee_duty)
-
-
 def randao_reveal_combination() -> BLSSignature:
     """
     randao_reveal Combination Process:
@@ -249,23 +228,3 @@ def block_combination() -> None:
     complete_signed_block = construct_signed_block(block_signature_shares)
     # 3. Send to beacon node for gossip
     bn_submit_block(complete_signed_block)
-
-
-# def sync_committee_signature_combination_signature_share() -> None:
-#     """
-#     Sync Committee Signature Combination Process:
-#     1. Always keep listening for sync committee signature signature shares using
-#         listen_for_sync_committee_signatures_signature_shares.
-#     2a. Whenever a set of sync committee signature signature shares are found in Step 1 that can be
-#         combined to construct a complete signed sync committee signature, construct the sync committee
-#         signature.
-#     2b. Send the sync committee signature to the beacon node for Ethereum p2p gossip.
-#     """
-#     # 1. Always listen for sync committee signature signature shares from DV peers.
-#     sync_committee_signature_signature_shares = listen_for_sync_committee_signatures_signature_shares()
-#     # 2. Reconstruct complete signed sync committee signature by combining 
-#     #    sync committee signature signature shares
-#     complete_signed_sync_committee_signature = \
-#         construct_signed_sync_committee_signature(sync_committee_signature_signature_shares)
-#     # 3. Send to beacon node for gossip
-#     bn_submit_sync_committee_signature(complete_signed_sync_committee_signature)

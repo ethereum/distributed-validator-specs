@@ -102,13 +102,6 @@ class ProposerDuty:
 
 
 @dataclass
-class SyncCommitteeDuty:
-    pubkey: BLSPubkey
-    validator_index: ValidatorIndex
-    validator_sync_committee_indices: List[ValidatorIndex]
-
-
-@dataclass
 class SyncCommitteeContribution:
     slot: Slot
     beacon_block_root: Root

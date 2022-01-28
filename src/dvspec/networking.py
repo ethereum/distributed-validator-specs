@@ -3,7 +3,6 @@ from typing import List
 from eth2spec.altair.mainnet import Attestation, SignedBeaconBlock
 
 from .utils.types import (
-    SyncCommitteeSignature,
     BLSSignature
 )
 
@@ -65,26 +64,5 @@ def listen_for_block_signature_shares() -> List[SignedBeaconBlock]:
 
 def construct_signed_block(block_signature_shares: List[SignedBeaconBlock]) -> SignedBeaconBlock:
     """Construct a complete signed block from block signature shares.
-    """
-    pass
-
-
-def broadcast_sync_committee_signature_signature_share(
-        sync_committee_signature_signature_share: SyncCommitteeSignature) -> None:
-    """Broadcasts sync committee signature signature shares among DV peer nodes.
-    """
-    pass
-
-
-def listen_for_sync_committee_signatures_signature_shares() -> List[SyncCommitteeSignature]:
-    """Returns a list of any sync committee signature signature shares that can be combined to construct
-    a complete signed block.
-    """
-    pass
-
-
-def construct_signed_sync_committee_signature(
-        sync_committee_signatures_signature_share: List[SyncCommitteeSignature]) -> SyncCommitteeSignature:
-    """Construct a complete signed sync committee signature from sync committee signature signature shares.
     """
     pass

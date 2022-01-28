@@ -16,9 +16,6 @@ from .utils.types import (
     ProposerDuty,
     Root,
     Slot,
-    SyncCommitteeContribution,
-    SyncCommitteeDuty,
-    SyncCommitteeSignature,
     ValidatorIndex,
 )
 
@@ -80,30 +77,6 @@ def bn_produce_block(slot: Slot, randao_reveal: BLSSignature, graffiti: Bytes32)
 def bn_submit_block(block: SignedBeaconBlock) -> None:
     """Submit block to BN for Ethereum p2p gossip.
     Uses https://ethereum.github.io/beacon-APIs/#/ValidatorRequiredApi/publishBlock
-    """
-    pass
-
-
-def bn_get_sync_committee_duties_for_epoch(validator_indices: List[ValidatorIndex],
-                                           epoch: Epoch) -> List[SyncCommitteeDuty]:
-    """Fetch sync committee duties for all validator indices in the epoch.
-    Uses https://ethereum.github.io/beacon-APIs/#/ValidatorRequiredApi/submitPoolSyncCommitteeSignatures
-    """
-    pass
-
-
-def bn_produce_sync_committee_contribution(slot: Slot,
-                                           subcommittee_index: ValidatorIndex,
-                                           beacon_block_root: Root) -> SyncCommitteeContribution:
-    """Produces the sync committee contribution for the given params from the BN.
-    Uses https://ethereum.github.io/beacon-APIs/#/ValidatorRequiredApi/produceSyncCommitteeContribution
-    """
-    pass
-
-
-def bn_submit_sync_committee_signature(sync_committee_signature: SyncCommitteeSignature) -> None:
-    """Submit sync committee signatures to the BN for Ethereum p2p gossip.
-    Uses https://ethereum.github.io/beacon-APIs/#/ValidatorRequiredApi/submitPoolSyncCommitteeSignatures
     """
     pass
 
