@@ -4,6 +4,7 @@ from eth2spec.altair.mainnet import Attestation, SignedBeaconBlock
 
 from .utils.types import (
     SyncCommitteeSignature,
+    BLSSignature
 )
 
 """
@@ -17,6 +18,13 @@ def broadcast_threshold_signed_attestation(threshold_signed_attestation: Attesta
     pass
 
 
+def listen_for_threshold_signed_randao_reveal() -> List[BLSSignature]:
+    """Returns a list of any threshold signed randao reveal values that can be combined to construct
+    a complete signed value.
+    """
+    pass
+
+
 def listen_for_threshold_signed_attestations() -> List[Attestation]:
     """Returns a list of any threshold signed attestations that can be combined to construct
     a complete signed attestation.
@@ -24,8 +32,20 @@ def listen_for_threshold_signed_attestations() -> List[Attestation]:
     pass
 
 
+def construct_signed_randao_reveal(threshold_signed_values: List[BLSSignature]) -> BLSSignature:
+    """Construct a complete signed randao reveal value from threshold signed values.
+    """
+    pass
+
+
 def construct_signed_attestation(threshold_signed_attestations: List[Attestation]) -> Attestation:
     """Construct a complete signed attestation from threshold signed attestations.
+    """
+    pass
+
+
+def broadcast_threshold_signed_randao_reveal(threshold_signed_randao_reveal: BLSSignature) -> None:
+    """Broadcasts a threshold signed randao reveal value among DV peer nodes.
     """
     pass
 

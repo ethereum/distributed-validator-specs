@@ -44,11 +44,14 @@ from .consensus import (
 from .networking import (
     broadcast_threshold_signed_attestation,
     broadcast_threshold_signed_block,
+    broadcast_threshold_signed_randao_reveal,
     construct_signed_attestation,
+    construct_signed_randao_reveal,
     construct_signed_block,
     construct_signed_sync_committee_signature,
     listen_for_threshold_signed_attestations,
     listen_for_threshold_signed_blocks,
+    listen_for_threshold_signed_randao_reveal,
     listen_for_threshold_signed_sync_committee_signatures,
 )
 from .utils.types import (
@@ -166,8 +169,11 @@ def serve_proposer_duty(slashing_db: SlashingDB, proposer_duty: ProposerDuty) ->
     fork_version = bn_get_fork_version(proposer_duty.slot)
     # Sign randao_reveal using RS
     randao_reveal_signing_root = compute_randao_reveal_signing_root(proposer_duty.slot)
-    randao_reveal = rs_sign_randao_reveal(compute_epoch_at_slot(proposer_duty.slot),
-                                          fork_version, randao_reveal_signing_root)
+    threshold_signed_randao_reveal = rs_sign_randao_reveal(compute_epoch_at_slot(proposer_duty.slot),
+                                                           fork_version, randao_reveal_signing_root)
+    # TODO: Broadcast, listen for, and combine threshold signed randao_reveal values
+    broadcast_threshold_signed_randao_reveal(threshold_signed_randao_reveal)
+    randao_reveal = threshold_randao_reveal_combination()
     block = consensus_on_block(slashing_db, proposer_duty, randao_reveal)
     assert consensus_is_valid_block(slashing_db, block, proposer_duty, randao_reveal)
     # Release lock on consensus_on_block here.
@@ -194,6 +200,22 @@ def serve_proposer_duty(slashing_db: SlashingDB, proposer_duty: ProposerDuty) ->
 #     # TODO: Update slashing DB with sync committee contribution
 #     # Cache decided sync committee contribution value to provide to VC
 #     cache_sync_committee_contribution_for_vc(sync_committee_contribution, sync_committee_duty)
+
+
+def threshold_randao_reveal_combination() -> None:
+    """
+    Threshold randao_reveal Combination Process:
+    1. Always keep listening for threshold signed randao reveal values from other DVCs.
+    2a. Whenever a set of threshold signed values are found in Step 1 that can be
+        combined to construct a complete randao reveal, construct the complete value.
+    3. Return the randao reveal.
+    """
+    # 1. Always listen for threshold signed randao reveal values from DV peers.
+    threshold_signed_randao_reveals = listen_for_threshold_signed_randao_reveal()
+    # 2. Reconstruct complete signed value by combining threshold signed values
+    complete_signed_randao_reveal = construct_signed_randao_reveal(threshold_signed_randao_reveals)
+    # 3. Return complete signed value
+    return complete_signed_randao_reveal
 
 
 def threshold_attestation_combination() -> None:
