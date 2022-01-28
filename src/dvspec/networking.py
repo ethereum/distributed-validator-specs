@@ -25,7 +25,7 @@ def listen_for_randao_reveal_signature_shares() -> List[BLSSignature]:
     pass
 
 
-def listen_for_attestations_signature_shares() -> List[Attestation]:
+def listen_for_attestation_signature_shares() -> List[Attestation]:
     """Returns a list of any attestations signature shares that can be combined to construct
     a complete signed attestation.
     """
@@ -56,7 +56,7 @@ def broadcast_block_signature_share(block_signature_share: SignedBeaconBlock) ->
     pass
 
 
-def listen_for_blocks_signature_shares() -> List[SignedBeaconBlock]:
+def listen_for_block_signature_shares() -> List[SignedBeaconBlock]:
     """Returns a list of any block signature shares that can be combined to construct
     a complete signed block.
     """

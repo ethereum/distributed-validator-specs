@@ -50,8 +50,8 @@ from .networking import (
     construct_signed_randao_reveal,
     construct_signed_block,
     construct_signed_sync_committee_signature,
-    listen_for_attestations_signature_shares,
-    listen_for_blocks_signature_shares,
+    listen_for_attestation_signature_shares,
+    listen_for_block_signature_shares,
     listen_for_randao_reveal_signature_shares,
     listen_for_sync_committee_signatures_signature_shares,
 )
@@ -228,7 +228,7 @@ def attestation_combination() -> None:
     2b. Send the attestation to the beacon node for Ethereum p2p gossip.
     """
     # 1. Always listen for block signature shares from DV peers.
-    attestation_signature_shares = listen_for_attestations_signature_shares()
+    attestation_signature_shares = listen_for_attestation_signature_shares()
     # 2. Reconstruct complete signed block by combining attestation signature shares
     complete_signed_attestation = construct_signed_attestation(attestation_signature_shares)
     # 3. Send to beacon node for gossip
@@ -244,7 +244,7 @@ def block_combination() -> None:
     2b. Send the block to the beacon node for Ethereum p2p gossip.
     """
     # 1. Always listen for block signature shares from DV peers.
-    block_signature_shares = listen_for_blocks_signature_shares()
+    block_signature_shares = listen_for_block_signature_shares()
     # 2. Reconstruct complete signed block by combining block signature shares
     complete_signed_block = construct_signed_block(block_signature_shares)
     # 3. Send to beacon node for gossip
