@@ -12,79 +12,79 @@ Networking Specification
 """
 
 
-def broadcast_threshold_signed_attestation(threshold_signed_attestation: Attestation) -> None:
-    """Broadcasts a threshold signed attestation among DV peer nodes.
+def broadcast_attestation_signature_share(attestation_signature_share: Attestation) -> None:
+    """Broadcasts attestation signature shares among DV peer nodes.
     """
     pass
 
 
-def listen_for_threshold_signed_randao_reveal() -> List[BLSSignature]:
-    """Returns a list of any threshold signed randao reveal values that can be combined to construct
+def listen_for_randao_reveal_signature_shares() -> List[BLSSignature]:
+    """Returns a list of any randao reveal signature shares that can be combined to construct
     a complete signed value.
     """
     pass
 
 
-def listen_for_threshold_signed_attestations() -> List[Attestation]:
-    """Returns a list of any threshold signed attestations that can be combined to construct
+def listen_for_attestations_signature_shares() -> List[Attestation]:
+    """Returns a list of any attestations signature shares that can be combined to construct
     a complete signed attestation.
     """
     pass
 
 
-def construct_signed_randao_reveal(threshold_signed_values: List[BLSSignature]) -> BLSSignature:
-    """Construct a complete signed randao reveal value from threshold signed values.
+def construct_signed_randao_reveal(value_signature_shares: List[BLSSignature]) -> BLSSignature:
+    """Construct a complete signed randao reveal value from signature shares.
     """
     pass
 
 
-def construct_signed_attestation(threshold_signed_attestations: List[Attestation]) -> Attestation:
-    """Construct a complete signed attestation from threshold signed attestations.
+def construct_signed_attestation(attestation_signature_shares: List[Attestation]) -> Attestation:
+    """Construct a complete signed attestation from attestation signature shares.
     """
     pass
 
 
-def broadcast_threshold_signed_randao_reveal(threshold_signed_randao_reveal: BLSSignature) -> None:
-    """Broadcasts a threshold signed randao reveal value among DV peer nodes.
+def broadcast_randao_reveal_signature_share(randao_reveal_signature_share: BLSSignature) -> None:
+    """Broadcasts randao reveal signature shares among DV peer nodes.
     """
     pass
 
 
-def broadcast_threshold_signed_block(threshold_signed_block: SignedBeaconBlock) -> None:
-    """Broadcasts a threshold signed beacon block among DV peer nodes.
+def broadcast_block_signature_share(block_signature_share: SignedBeaconBlock) -> None:
+    """Broadcasts beacon block signature shares among DV peer nodes.
     """
     pass
 
 
-def listen_for_threshold_signed_blocks() -> List[SignedBeaconBlock]:
-    """Returns a list of any threshold signed blocks that can be combined to construct
+def listen_for_blocks_signature_shares() -> List[SignedBeaconBlock]:
+    """Returns a list of any block signature shares that can be combined to construct
     a complete signed block.
     """
     pass
 
 
-def construct_signed_block(threshold_signed_blocks: List[SignedBeaconBlock]) -> SignedBeaconBlock:
-    """Construct a complete signed block from threshold signed blocks.
+def construct_signed_block(block_signature_shares: List[SignedBeaconBlock]) -> SignedBeaconBlock:
+    """Construct a complete signed block from block signature shares.
     """
     pass
 
 
-def broadcast_threshold_signed_sync_committee_signature(
-        threshold_signed_sync_committee_signature: SyncCommitteeSignature) -> None:
-    """Broadcasts a threshold signed sync committee signature among DV peer nodes.
+def broadcast_sync_committee_signature_signature_share(
+        sync_committee_signature_signature_share: SyncCommitteeSignature) -> None:
+    """Broadcasts sync committee signature signature shares among DV peer nodes.
     """
     pass
 
 
-def listen_for_threshold_signed_sync_committee_signatures() -> List[SyncCommitteeSignature]:
-    """Returns a list of any threshold signed sync committee signatures that can be combined to construct
+def listen_for_sync_committee_signatures_signature_shares() -> List[SyncCommitteeSignature]:
+    """Returns a list of any sync committee signature signature shares that can be combined to construct
     a complete signed block.
     """
     pass
 
 
 def construct_signed_sync_committee_signature(
-        threshold_signed_sync_committee_signatures: List[SyncCommitteeSignature]) -> SyncCommitteeSignature:
-    """Construct a complete signed sync committee signature from threshold signed sync committee signatures.
+        sync_committee_signatures_signature_share: List[SyncCommitteeSignature]) -> SyncCommitteeSignature:
+    """Construct a complete signed sync committee signature from sync committee signature signature shares.
     """
     pass

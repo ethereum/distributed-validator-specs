@@ -23,8 +23,8 @@ The basic operation of the DVC is as follows:
 3. When triggered to serve a duty:
     1. Form consensus with other Co-Validators over the data to be signed
     2. Instruct the RS to sign over the decided data.
-    3. After getting the threshold signed data from the RS, broadcast it to other Co-Validators
-    4. Re-combine of threshold signed data after receiving enough threshold signed data shares
+    3. After getting the signature share from the RS, broadcast it to other Co-Validators
+    4. Re-combination of signature shares after receiving enough signature shares
     5. Send the combined signature to the attached BN to be gossiped to the greater PoS network
 
 ### Anti-Slashing Measures at the DVC
