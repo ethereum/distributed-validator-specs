@@ -26,6 +26,11 @@ from tests.helpers.eth_node_interface import (
     rs_sign_randao_reveal,
     rs_sign_block,
 )
+from tests.helpers.networking import (
+    broadcast_threshold_signed_randao_reveal,
+    listen_for_threshold_signed_randao_reveal,
+    construct_signed_randao_reveal,
+)
 from tests.helpers.patch_dvspec import (
     replace_method_in_dvspec,
 )
@@ -37,6 +42,9 @@ replace_method_in_dvspec("bn_get_fork_version", bn_get_fork_version)
 replace_method_in_dvspec("rs_sign_attestation", rs_sign_attestation)
 replace_method_in_dvspec("rs_sign_randao_reveal", rs_sign_randao_reveal)
 replace_method_in_dvspec("rs_sign_block", rs_sign_block)
+replace_method_in_dvspec("broadcast_threshold_signed_randao_reveal", broadcast_threshold_signed_randao_reveal)
+replace_method_in_dvspec("listen_for_threshold_signed_randao_reveal", listen_for_threshold_signed_randao_reveal)
+replace_method_in_dvspec("construct_signed_randao_reveal", construct_signed_randao_reveal)
 
 
 def test_basic_attestation() -> None:

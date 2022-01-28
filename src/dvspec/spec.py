@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from typing import (
     List,
 )
+
 from eth2spec.altair.mainnet import (
     AttestationData,
     Attestation,
@@ -59,7 +60,8 @@ from .utils.types import (
     SlashingDB,
     SlashingDBAttestation,
     SlashingDBBlock,
-    ValidatorIndex
+    ValidatorIndex,
+    BLSSignature
 )
 
 
@@ -171,7 +173,6 @@ def serve_proposer_duty(slashing_db: SlashingDB, proposer_duty: ProposerDuty) ->
     randao_reveal_signing_root = compute_randao_reveal_signing_root(proposer_duty.slot)
     threshold_signed_randao_reveal = rs_sign_randao_reveal(compute_epoch_at_slot(proposer_duty.slot),
                                                            fork_version, randao_reveal_signing_root)
-    # TODO: Broadcast, listen for, and combine threshold signed randao_reveal values
     broadcast_threshold_signed_randao_reveal(threshold_signed_randao_reveal)
     randao_reveal = threshold_randao_reveal_combination()
     block = consensus_on_block(slashing_db, proposer_duty, randao_reveal)
@@ -202,7 +203,7 @@ def serve_proposer_duty(slashing_db: SlashingDB, proposer_duty: ProposerDuty) ->
 #     cache_sync_committee_contribution_for_vc(sync_committee_contribution, sync_committee_duty)
 
 
-def threshold_randao_reveal_combination() -> None:
+def threshold_randao_reveal_combination() -> BLSSignature:
     """
     Threshold randao_reveal Combination Process:
     1. Always keep listening for threshold signed randao reveal values from other DVCs.
