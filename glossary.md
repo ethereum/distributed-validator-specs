@@ -4,6 +4,7 @@
 
 - **Validator**: A public key participating in proof-of-stake validation of Ethereum. In Phase 0, validators are expected to perform attestation & block proposal duties for beacon chain blocks.
 - **Validator Client (VC)**: Software to perform the duties of Validators. The VC has access to the private key of the Validators.
+- **Remote Signer (RS)**: Software responsible for Ethereum private key management, specifically for signing Ethereum messages such as blocks, attestations, etc. The RS runs a server that accepts incoming requests to sign over such messages.
 
 ## Distributed Validator Concepts
 
