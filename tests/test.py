@@ -21,6 +21,15 @@ from tests.helpers.eth_node_interface import (
     bn_get_proposer_duties_for_epoch,
     fill_attestation_duties_with_val_index,
     filter_and_fill_proposer_duties_with_val_index,
+    bn_get_fork_version,
+    rs_sign_attestation,
+    rs_sign_randao_reveal,
+    rs_sign_block,
+)
+from tests.helpers.networking import (
+    broadcast_randao_reveal_signature_share,
+    listen_for_randao_reveal_signature_shares,
+    construct_signed_randao_reveal,
 )
 from tests.helpers.patch_dvspec import (
     replace_method_in_dvspec,
@@ -29,6 +38,13 @@ from tests.helpers.patch_dvspec import (
 
 replace_method_in_dvspec("consensus_on_attestation", consensus_on_attestation)
 replace_method_in_dvspec("consensus_on_block", consensus_on_block)
+replace_method_in_dvspec("bn_get_fork_version", bn_get_fork_version)
+replace_method_in_dvspec("rs_sign_attestation", rs_sign_attestation)
+replace_method_in_dvspec("rs_sign_randao_reveal", rs_sign_randao_reveal)
+replace_method_in_dvspec("rs_sign_block", rs_sign_block)
+replace_method_in_dvspec("broadcast_randao_reveal_signature_share", broadcast_randao_reveal_signature_share)
+replace_method_in_dvspec("listen_for_randao_reveal_signature_shares", listen_for_randao_reveal_signature_shares)
+replace_method_in_dvspec("construct_signed_randao_reveal", construct_signed_randao_reveal)
 
 
 def test_basic_attestation() -> None:

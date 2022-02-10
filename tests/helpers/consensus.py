@@ -38,7 +38,8 @@ def consensus_on_attestation(slashing_db: SlashingDB, attestation_duty: Attestat
     return attestation_data
 
 
-def consensus_on_block(slashing_db: SlashingDB, proposer_duty: ProposerDuty) -> BeaconBlock:
+def consensus_on_block(slashing_db: SlashingDB,
+                       proposer_duty: ProposerDuty, randao_reveal: BLSSignature) -> BeaconBlock:
     """Consensus protocol between distributed validator nodes for block values.
     Returns the decided value.
     If this DV is the leader, it must use `bn_produce_block` for the proposed value.
@@ -46,6 +47,6 @@ def consensus_on_block(slashing_db: SlashingDB, proposer_duty: ProposerDuty) -> 
     validity of the proposed block value.
     """
     # TODO: Use this method in tests instead of dvspec.consensus.consensus_on_block
-    block = bn_produce_block(proposer_duty.slot, BLSSignature(b'0'*96), Bytes32(b'0'*32))
-    assert consensus_is_valid_block(slashing_db, block, proposer_duty)
+    block = bn_produce_block(proposer_duty.slot, randao_reveal, Bytes32(b'0'*32))
+    assert consensus_is_valid_block(slashing_db, block, proposer_duty, randao_reveal)
     return block

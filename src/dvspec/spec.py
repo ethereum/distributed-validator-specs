@@ -2,12 +2,23 @@ from dataclasses import dataclass
 from typing import (
     List,
 )
+
 from eth2spec.altair.mainnet import (
     AttestationData,
+    Attestation,
     BeaconBlock,
+    SignedBeaconBlock,
+    compute_start_slot_at_epoch,
+    compute_epoch_at_slot,
 )
 
-from .utils.helpers import (
+from dvspec.utils.helpers.signing import (
+    compute_attestation_signing_root,
+    compute_block_signing_root,
+    compute_randao_reveal_signing_root,
+)
+
+from .utils.helpers.slashing_db import (
     get_slashing_db_data_for_pubkey,
     is_slashable_attestation_data,
     is_slashable_block,
@@ -15,33 +26,37 @@ from .utils.helpers import (
 from .eth_node_interface import (
     AttestationDuty,
     ProposerDuty,
-    SyncCommitteeDuty,
+    bn_get_fork_version,
     bn_submit_attestation,
     bn_submit_block,
-    bn_submit_sync_committee_signature,
-    cache_attestation_data_for_vc,
-    cache_block_for_vc,
-    cache_sync_committee_contribution_for_vc,
+    rs_sign_attestation,
+    rs_sign_randao_reveal,
+    rs_sign_block,
 )
 from .consensus import (
+    consensus_is_valid_attestation_data,
+    consensus_is_valid_block,
     consensus_on_attestation,
     consensus_on_block,
-    consensus_on_sync_committee_contribution,
 )
 from .networking import (
+    broadcast_attestation_signature_share,
+    broadcast_block_signature_share,
+    broadcast_randao_reveal_signature_share,
     construct_signed_attestation,
+    construct_signed_randao_reveal,
     construct_signed_block,
-    construct_signed_sync_committee_signature,
-    listen_for_threshold_signed_attestations,
-    listen_for_threshold_signed_blocks,
-    listen_for_threshold_signed_sync_committee_signatures,
+    listen_for_attestation_signature_shares,
+    listen_for_block_signature_shares,
+    listen_for_randao_reveal_signature_shares,
 )
 from .utils.types import (
     BLSPubkey,
     SlashingDB,
     SlashingDBAttestation,
     SlashingDBBlock,
-    ValidatorIndex
+    ValidatorIndex,
+    BLSSignature
 )
 
 
@@ -119,11 +134,19 @@ def serve_attestation_duty(slashing_db: SlashingDB, attestation_duty: Attestatio
     # Only a single consensus_on_attestation instance should be
     # running at any given time
     attestation_data = consensus_on_attestation(slashing_db, attestation_duty)
+    assert consensus_is_valid_attestation_data(slashing_db, attestation_data, attestation_duty)
     # Release lock on consensus_on_attestation here.
     # Add attestation to slashing DB
     update_attestation_slashing_db(slashing_db, attestation_data, attestation_duty.pubkey)
-    # Cache decided attestation data value to provide to VC
-    cache_attestation_data_for_vc(attestation_data, attestation_duty)
+    # Sign attestation using RS
+    # TODO: Reuse fork version from here in compute_domain
+    fork_version = bn_get_fork_version(compute_start_slot_at_epoch(attestation_data.target.epoch))
+    attestation_signing_root = compute_attestation_signing_root(attestation_data)
+    attestation_signature_share = rs_sign_attestation(attestation_data, attestation_signing_root, fork_version)
+    # TODO: What is attestation_signature_share.aggregation_bits?
+    attestation_signature_share = Attestation(data=attestation_data, signature=attestation_signature_share)
+    # TODO: Should we just gossip & recombine the signature shares without attestation data?
+    broadcast_attestation_signature_share(attestation_signature_share)
 
 
 def serve_proposer_duty(slashing_db: SlashingDB, proposer_duty: ProposerDuty) -> None:
@@ -140,79 +163,68 @@ def serve_proposer_duty(slashing_db: SlashingDB, proposer_duty: ProposerDuty) ->
     # Obtain lock on consensus_on_block here.
     # Only a single consensus_on_block instance should be
     # running at any given time
-    block = consensus_on_block(slashing_db, proposer_duty)
+    fork_version = bn_get_fork_version(proposer_duty.slot)
+    # Sign randao_reveal using RS
+    randao_reveal_signing_root = compute_randao_reveal_signing_root(proposer_duty.slot)
+    randao_reveal_signature_share = rs_sign_randao_reveal(compute_epoch_at_slot(proposer_duty.slot),
+                                                          fork_version, randao_reveal_signing_root)
+    broadcast_randao_reveal_signature_share(randao_reveal_signature_share)
+    randao_reveal = randao_reveal_combination()
+    block = consensus_on_block(slashing_db, proposer_duty, randao_reveal)
+    assert consensus_is_valid_block(slashing_db, block, proposer_duty, randao_reveal)
     # Release lock on consensus_on_block here.
     # Add block to slashing DB
     update_block_slashing_db(slashing_db, block, proposer_duty.pubkey)
-    # Cache decided block value to provide to VC
-    cache_block_for_vc(block, proposer_duty)
+    # Sign block using RS
+    block_signing_root = compute_block_signing_root(block)
+    block_signature_share = rs_sign_block(block, fork_version, block_signing_root)
+    block_signature_share = SignedBeaconBlock(message=block, signature=block_signature_share)
+    broadcast_block_signature_share(block_signature_share)
 
 
-def serve_sync_committee_duty(slashing_db: SlashingDB, sync_committee_duty: SyncCommitteeDuty) -> None:
-    """"
-    Sync Committee Signature Production Process:
-    TODO: What is the sequence here - do you query for next epoch's duties?
+def randao_reveal_combination() -> BLSSignature:
     """
-    # TODO: Is lock on consensus the best way to do this?
-    # Obtain lock on consensus_on_sync_committee_contribution here.
-    # Only a single consensus_on_sync_committee_contribution instance should be
-    # running at any given time
-    sync_committee_contribution = consensus_on_sync_committee_contribution(sync_committee_duty)
-    # Release lock on consensus_on_block here.
-    # TODO: Update slashing DB with sync committee contribution
-    # Cache decided sync committee contribution value to provide to VC
-    cache_sync_committee_contribution_for_vc(sync_committee_contribution, sync_committee_duty)
-
-
-def threshold_attestation_combination() -> None:
+    randao_reveal Combination Process:
+    1. Always keep listening for randao reveal signature shares from other DVCs.
+    2a. Whenever a set of signature shares are found in Step 1 that can be
+        combined to construct a complete randao reveal, construct the complete value.
+    3. Return the randao reveal.
     """
-    Threshold Attestation Combination Process:
-    1. Always keep listening for threshold signed attestations using
-        broadcast_threshold_signed_attestation.
-    2a. Whenever a set of threshold signed attestations are found in Step 1 that can be
+    # 1. Always listen for randao reveal signature shares from DV peers.
+    randao_reveal_signature_shares = listen_for_randao_reveal_signature_shares()
+    # 2. Reconstruct complete signed value by combining signature shares
+    complete_signed_randao_reveal = construct_signed_randao_reveal(randao_reveal_signature_shares)
+    # 3. Return complete signed value
+    return complete_signed_randao_reveal
+
+
+def attestation_combination() -> None:
+    """
+    Attestation Combination Process:
+    1. Always keep listening for attestation signature shares from other DVCs.
+    2a. Whenever a set of attestation signature shares are found in Step 1 that can be
         combined to construct a complete signed attestation, construct the attestation.
     2b. Send the attestation to the beacon node for Ethereum p2p gossip.
     """
-    # 1. Always listen for threshold signed blocks from DV peers.
-    threshold_signed_attestations = listen_for_threshold_signed_attestations()
-    # 2. Reconstruct complete signed block by combining threshold signed attestations
-    complete_signed_attestation = construct_signed_attestation(threshold_signed_attestations)
+    # 1. Always listen for block signature shares from DV peers.
+    attestation_signature_shares = listen_for_attestation_signature_shares()
+    # 2. Reconstruct complete signed block by combining attestation signature shares
+    complete_signed_attestation = construct_signed_attestation(attestation_signature_shares)
     # 3. Send to beacon node for gossip
     bn_submit_attestation(complete_signed_attestation)
 
 
-def threshold_signed_block_combination() -> None:
+def block_combination() -> None:
     """
-    Threshold Block Combination Process:
-    1. Always keep listening for threshold signed blocks using
-        listen_for_threshold_signed_block.
-    2a. Whenever a set of threshold signed blocks are found in Step 1 that can be
+    Block Combination Process:
+    1. Always keep listening for block signature shares using from other DVCs.
+    2a. Whenever a set of block signature shares are found in Step 1 that can be
         combined to construct a complete signed block, construct the block.
     2b. Send the block to the beacon node for Ethereum p2p gossip.
     """
-    # 1. Always listen for threshold signed blocks from DV peers.
-    threshold_signed_blocks = listen_for_threshold_signed_blocks()
-    # 2. Reconstruct complete signed block by combining threshold signed blocks
-    complete_signed_block = construct_signed_block(threshold_signed_blocks)
+    # 1. Always listen for block signature shares from DV peers.
+    block_signature_shares = listen_for_block_signature_shares()
+    # 2. Reconstruct complete signed block by combining block signature shares
+    complete_signed_block = construct_signed_block(block_signature_shares)
     # 3. Send to beacon node for gossip
     bn_submit_block(complete_signed_block)
-
-
-def threshold_signed_sync_committee_signature_combination() -> None:
-    """
-    Threshold Sync Committee Signature Combination Process:
-    1. Always keep listening for threshold signed sync committee signatures using
-        listen_for_threshold_signed_sync_committee_signatures.
-    2a. Whenever a set of threshold signed sync committee signatures are found in Step 1 that can be
-        combined to construct a complete signed sync committee signature, construct the sync committee
-        signature.
-    2b. Send the sync committee signature to the beacon node for Ethereum p2p gossip.
-    """
-    # 1. Always listen for threshold signed sync committee signatures from DV peers.
-    threshold_signed_sync_committee_signatures = listen_for_threshold_signed_sync_committee_signatures()
-    # 2. Reconstruct complete signed sync committee signature by combining threshold
-    #    signed sync committee signatures
-    complete_signed_sync_committee_signature = \
-        construct_signed_sync_committee_signature(threshold_signed_sync_committee_signatures)
-    # 3. Send to beacon node for gossip
-    bn_submit_sync_committee_signature(complete_signed_sync_committee_signature)
