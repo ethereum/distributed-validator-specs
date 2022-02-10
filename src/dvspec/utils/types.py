@@ -1,3 +1,16 @@
+from eth2spec.altair.mainnet import (
+    uint64,
+    Bytes32,
+    Epoch,
+    BLSPubkey,
+    BLSSignature,
+    CommitteeIndex,
+    Root,
+    Slot,
+    ValidatorIndex,
+    Version,
+)
+
 from dataclasses import dataclass
 from typing import (
     List,
@@ -9,25 +22,26 @@ Basic Datatypes
 """
 
 
-UInt64 = int
-Bytes32 = bytes
-Bytes48 = bytes
-Bytes96 = bytes
+UInt64 = uint64
+# UInt64 = int
+# Bytes32 = bytes
+# Bytes48 = bytes
+# Bytes96 = bytes
 
 
 """
 Aliased Data Types
 """
 
-Epoch = UInt64
-BLSPubkey = Bytes48
-BLSSignature = Bytes96
-CommitteeIndex = UInt64
+# Epoch = UInt64
+# BLSPubkey = Bytes48
+# BLSSignature = Bytes96
+# CommitteeIndex = UInt64
 CommitteeLength = UInt64
-Root = Bytes32
-Slot = UInt64
-ValidatorIndex = UInt64
-Version = UInt64
+# Root = Bytes32
+# Slot = UInt64
+# ValidatorIndex = UInt64
+# Version = UInt64
 
 
 """
@@ -85,13 +99,6 @@ class ProposerDuty:
     pubkey: BLSPubkey
     validator_index: ValidatorIndex
     slot: Slot
-
-
-@dataclass
-class SyncCommitteeDuty:
-    pubkey: BLSPubkey
-    validator_index: ValidatorIndex
-    validator_sync_committee_indices: List[ValidatorIndex]
 
 
 @dataclass

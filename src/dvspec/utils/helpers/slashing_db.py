@@ -4,15 +4,14 @@ from eth2spec.altair.mainnet import (
     BeaconBlock,
 )
 
-from .types import (
+from ..types import (
     BLSPubkey,
     SlashingDB,
     SlashingDBData,
 )
 
-
 """
-Helper Functions
+Slashing DB Helper Functions
 """
 
 
