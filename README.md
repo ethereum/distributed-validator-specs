@@ -45,7 +45,7 @@ The following are existing implementations of Distributed Validator technology (
 
 ![General Architecture](figures/general-architecture.png)
 
-This specification presents a way to implement Distributed Validator Client software as middleware between the Beacon Node (BN) and a Remote Signer (RS):
+This specification presents a way to implement Distributed Validator Client software as middleware between the Beacon Node (BN) and a [Remote Signer (RS)](https://github.com/ConsenSys/web3signer):
 - all communication between the BN and RS is managed by the DVC in order for it to provide the additional DV functionality.
 - the BN & RS are unaware of the presence of the DVC, i.e., they think they are connected to each other as usual.
 
