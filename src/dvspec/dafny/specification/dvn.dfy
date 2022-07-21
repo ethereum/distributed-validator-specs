@@ -1,6 +1,5 @@
 include "../commons.dfy"
 include "dvc_spec.dfy"
-include "../proof/dvc_implementation_spec_proof.dfy"
 include "consensus.dfy"
 include "network.dfy"
 
@@ -12,7 +11,6 @@ abstract module DV
     import opened ConsensusSpec
     import opened DVCNode_Spec
     import opened DVCNode_Externs_Proofs
-    import opened DVCNode = DVCNode_Implementation_Proofs`PublicInterface
 
     datatype Adversary = Adversary(
         nodes: set<BLSPubkey>
@@ -23,33 +21,27 @@ abstract module DV
         honest_nodes_states: map<BLSPubkey, DVCNodeState>,
         adversary: Adversary,
         dv_pubkey: BLSPubkey,
-        // attestations_shares_sent: set<AttestationShare>,
         consensus_on_attestation_data: imaptotal<Slot, ConsensusInstance<AttestationData>>,
         att_network: NetworkSpec.Network<AttestationShare>,
         all_attestations_created: set<Attestation>,
-        slashing_dbs_used_for_validating_attestations: imaptotal<Slot, set<AttestationSlashingDB>>,
-        // aggregated_attestations_sent: set<Attestation>,
-        // attestation_duties_served: map<AttestationDuty, set<BLSPubkey>>,
         construct_signed_attestation_signature: (set<AttestationShare>) -> Optional<BLSSignature>
     )
 
     datatype Event = 
     | AdeversaryTakingStep(node: BLSPubkey, new_attestation_shares_sent: set<MessaageWithRecipient<AttestationShare>>,
         messagesReceivedByTheNode: set<AttestationShare>)
-    | HonestNodeTakingStep(node: BLSPubkey, event: DVCNode_Spec.Event, nodeOutputs: DVCNode_Spec.Outputs)
-
-
-    predicate is_slashable_attestation_data(slashing_db: AttestationSlashingDB, attestation_data: AttestationData)
+    | HonestNodeTakingStep(node: BLSPubkey, event: Types.Event, nodeOutputs: DVCNode_Spec.Outputs)
 
     predicate Init(
-        s: DVState
+        s: DVState,
+        initial_attestation_slashing_db: set<SlashingDBAttestation>
     )
     {
         && s.honest_nodes_states.Keys !! s.adversary.nodes !! {s.dv_pubkey}
         && s.all_nodes == s.honest_nodes_states.Keys + s.adversary.nodes
         && s.honest_nodes_states.Keys != {}
         && |s.adversary.nodes| <= f(|s.all_nodes|)
-        && (
+        && (                            
             forall 
                 att_shares: set<AttestationShare>
                 ::
@@ -87,10 +79,9 @@ abstract module DV
 
         )   
         && s.all_attestations_created == {}
-        && s.slashing_dbs_used_for_validating_attestations == (imap s: Slot :: {})   
         && (
             forall n | n in s.honest_nodes_states.Keys ::
-                DVCNode_Spec.Init(s.honest_nodes_states[n], s.dv_pubkey, s.all_nodes, s.construct_signed_attestation_signature)
+                DVCNode_Spec.Init(s.honest_nodes_states[n], s.dv_pubkey, s.all_nodes, s.construct_signed_attestation_signature, initial_attestation_slashing_db, n)
         )      
         &&  NetworkSpec.Init(s.att_network, s.all_nodes)
         &&  (
@@ -140,7 +131,7 @@ abstract module DV
     predicate NextHonestNode(
         s: DVState,
         node: BLSPubkey,
-        nodeEvent: DVCNode_Spec.Event,
+        nodeEvent: Types.Event,
         nodeOutputs: DVCNode_Spec.Outputs,
         s': DVState        
     ) 
@@ -161,7 +152,7 @@ abstract module DV
     predicate NextHonestAfterAddingBlockToBn(
         s: DVState,
         node: BLSPubkey,
-        nodeEvent: DVCNode_Spec.Event,
+        nodeEvent: Types.Event,
         nodeOutputs: DVCNode_Spec.Outputs,
         s': DVState
     )
@@ -182,29 +173,7 @@ abstract module DV
             ;
         && NetworkSpec.Next(s.att_network, s'.att_network, node, nodeOutputs.att_shares_sent, messagesReceivedByTheNode)
         && (
-                forall consensus_id: Slot ::
-                    s'.slashing_dbs_used_for_validating_attestations[consensus_id] == s.slashing_dbs_used_for_validating_attestations[consensus_id] +
-                        if isNodeRunning(s.consensus_on_attestation_data[consensus_id], node) then
-                            {s'.honest_nodes_states[node].attestation_slashing_db}
-                        else
-                            {}
-            )
-        && (
             forall cid | cid in s.consensus_on_attestation_data.Keys ::
-                var inputCommands := set c | 
-                                    && c in nodeOutputs.att_consensus_commands_sent
-                                    && c.id == cid
-                            ::
-                                if c.Start? then 
-                                    Some(ConsensusSpec.Start(node))
-                                else
-                                    Some(ConsensusSpec.Stop(node));
-                var input :|
-                    if inputCommands == {} then
-                        input == None
-                    else
-                        input in inputCommands;
-
                 var output := 
                     if nodeEvent.AttConsensusDecided? && nodeEvent.id == cid then 
                         Some(Decided(node, nodeEvent.decided_attestation_data))
@@ -212,32 +181,21 @@ abstract module DV
                         None
                     ;
 
-                // The consenus protocol is exepcted to decide on an attestation data such that there exists at least one slashing_db, out of 
-                // the slashing_dbs that any honest node has had while participating in the consenus, for which the attestation data does not
-                // generate any slashabe condition.
-                && var validityPredicate := 
-                    (ad: AttestationData) => 
-                        exists db | db in s.slashing_dbs_used_for_validating_attestations[cid] ::
-                            !is_slashable_attestation_data(db, ad)
+                && var validityPredicates := 
+                    map n |
+                            && n in s.honest_nodes_states.Keys 
+                            && cid in s.honest_nodes_states[n].attestation_consensus_engine_state.attestation_consensus_active_instances.Keys
+                        ::
+                            s.honest_nodes_states[n].attestation_consensus_engine_state.attestation_consensus_active_instances[cid].validityPredicate
                     ;
 
                 ConsensusSpec.Next(
                     s.consensus_on_attestation_data[cid],
-                    input,
-                    validityPredicate,
+                    validityPredicates,
                     s'.consensus_on_attestation_data[cid],
                     output
                 )
-        )
-        && (
-            // This section collects all the slashing_dbs used by honest nodes participating in the various consensus instances
-            forall consensus_id: Slot ::
-                s'.slashing_dbs_used_for_validating_attestations[consensus_id] == s.slashing_dbs_used_for_validating_attestations[consensus_id] +
-                    if node in getRunningNodes(s'.consensus_on_attestation_data[consensus_id]) then
-                        {s'.honest_nodes_states[node].attestation_slashing_db}
-                    else
-                        {}
-        )        
+        )      
         && s'.adversary == s.adversary
         && s'.construct_signed_attestation_signature == s.construct_signed_attestation_signature
     }    
