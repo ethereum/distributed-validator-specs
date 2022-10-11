@@ -1,4 +1,4 @@
-# Ethereum Distributed Validator Specification
+# Ethereum Distributed Validator Specifications
 
 Distributed Validators (DV) are a technique for distributing the job of an Ethereum validator among a set of distributed nodes in order to improve resilience (safety, liveness, or both) as compared to running a validator client on a single machine.
 
