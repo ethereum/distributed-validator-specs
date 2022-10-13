@@ -31,6 +31,10 @@ By combining a suitable (safety-favouring) consensus algorithm with an *M-of-N* 
 
 ### Resources
 
+#### Formal specification and verification
+
+The formal specification and verification of the Distributed Validator technology are currently being developed [here](https://github.com/ConsenSys/distributed-validator-formal-specs-and-verification).
+
 #### Implementations
 
 The following are existing implementations of Distributed Validator technology (but not necessarily implementations of this specification).
